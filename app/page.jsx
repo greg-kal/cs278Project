@@ -1,7 +1,5 @@
-export default function Home() {
-  return (
-    <main>
-      {/* placeholder — replace with actual screens */}
-    </main>
-  );
+import TimelineApp from './components/TimelineApp';
+
+export default function Page() {
+  return <TimelineApp />;
 }
