@@ -1,4 +1,5 @@
 'use client';
+import { cloneElement } from 'react';
 
 const base = {
   width: 24,
@@ -45,8 +46,9 @@ export function Icon({ name, size = 24, color, filled }) {
       height: size,
       color: color || 'currentColor',
       flexShrink: 0,
+      lineHeight: 0,
     }}>
-      {icon}
+      {cloneElement(icon, { width: size, height: size, 'aria-hidden': true, focusable: 'false' })}
     </span>
   );
 }

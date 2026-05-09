@@ -65,8 +65,8 @@ export function ActivityScreen() {
                 onClick={() => event && navigate('eventDetail', { eventId: event.id })}
                 style={{
                   display: 'flex', gap: 12, padding: '10px 0',
-                  borderBottom: '1px solid var(--hair)',
                   background: 'transparent', border: 0,
+                  borderBottom: '1px solid var(--hair)',
                   width: '100%', textAlign: 'left', cursor: event ? 'pointer' : 'default',
                 }}
               >

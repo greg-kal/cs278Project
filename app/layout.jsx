@@ -9,7 +9,6 @@ export const metadata = {
     statusBarStyle: 'default',
     title: 'Timeline',
   },
-  themeColor: '#c96442',
 };
 
 export const viewport = {
@@ -17,6 +16,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: '#c96442',
 };
 
 export default function RootLayout({ children }) {

@@ -31,7 +31,7 @@ function UsualsScreen({ onClose, onSelectUsual, onScratch }) {
 
       <div style={{ padding: '14px 18px 0', flexShrink: 0 }}>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, lineHeight: 1.05, color: 'var(--ink)' }}>
-          What's the move?
+          What&apos;s the move?
         </div>
         <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 4 }}>
           Pick something you usually do, or start fresh.
@@ -193,8 +193,9 @@ function AddForm({ formData, setFormData, onClose, onBack }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '12px 12px',
+                background: 'transparent', border: 0,
                 borderTop: i ? '1px solid var(--hair)' : 'none',
-                background: 'transparent', border: 0, width: '100%', textAlign: 'left',
+                width: '100%', textAlign: 'left',
                 cursor: 'pointer',
               }}
             >

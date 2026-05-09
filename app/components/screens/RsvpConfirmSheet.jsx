@@ -26,6 +26,11 @@ export function RsvpConfirmSheet({ params, onClose }) {
     onClose();
   };
 
+  const handleAddComment = () => {
+    onClose();
+    navigate('comments', { eventId: event.id });
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -57,7 +62,7 @@ export function RsvpConfirmSheet({ params, onClose }) {
             <Icon name="check" size={28} />
           </div>
           <div style={{ fontSize: 22, fontWeight: 700, marginTop: 12, color: 'var(--ink)' }}>
-            You're in.
+            You&apos;re in.
           </div>
           <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 2, textAlign: 'center' }}>
             {host.name} and {totalGoing - 1} others will see you joined.
@@ -116,11 +121,14 @@ export function RsvpConfirmSheet({ params, onClose }) {
 
         {/* Actions */}
         <div style={{ padding: '14px 18px 0', display: 'flex', gap: 10 }}>
-          <button style={{
-            flex: 1, height: 48, borderRadius: 999,
-            border: '1px solid var(--hair-2)', background: 'transparent',
-            fontWeight: 600, fontSize: 15, color: 'var(--ink)', cursor: 'pointer',
-          }}>
+          <button
+            onClick={handleAddComment}
+            style={{
+              flex: 1, height: 48, borderRadius: 999,
+              border: '1px solid var(--hair-2)', background: 'transparent',
+              fontWeight: 600, fontSize: 15, color: 'var(--ink)', cursor: 'pointer',
+            }}
+          >
             Add comment
           </button>
           <button

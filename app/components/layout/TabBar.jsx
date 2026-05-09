@@ -5,7 +5,6 @@ import { Icon } from '../ui/Icon';
 const TABS = [
   { id: 'feed',     label: 'Feed',     icon: 'feed' },
   { id: 'friends',  label: 'Friends',  icon: 'people' },
-  { id: null,       label: '',         icon: null },   // FAB placeholder
   { id: 'activity', label: 'Activity', icon: 'bell' },
   { id: 'you',      label: 'You',      icon: 'me' },
 ];
@@ -28,8 +27,7 @@ export function TabBar() {
       padding: '10px 18px 0',
       zIndex: 20,
     }}>
-      {TABS.map((t, i) => {
-        if (!t.id) return <div key={i} style={{ flex: 1 }} />;
+      {TABS.map((t) => {
         const active = t.id === tab;
         return (
           <button

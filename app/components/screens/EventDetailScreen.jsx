@@ -144,11 +144,11 @@ function DetailWithPhoto({ event, host, isJoined, displayUsers, extraCount, tota
         <div style={{ display: 'flex', gap: 10 }}>
           {isJoined ? (
             <button onClick={onLeave} style={{ ...primaryBtnStyle, flex: 1, height: 52, fontSize: 16, background: 'var(--soft)', color: 'var(--ink)', border: '1px solid var(--hair-2)' }}>
-              ✓ You're in · Leave
+              ✓ You&apos;re in · Leave
             </button>
           ) : (
             <button onClick={onJoin} style={{ ...primaryBtnStyle, flex: 1, height: 52, fontSize: 16 }}>
-              I'm in
+              I&apos;m in
             </button>
           )}
           <button style={{ ...secondaryBtnStyle, height: 52, padding: '0 18px' }}>Maybe</button>
@@ -217,11 +217,11 @@ function DetailNoPhoto({ event, host, isJoined, displayUsers, extraCount, totalG
         <div style={{ display: 'flex', gap: 10 }}>
           {isJoined ? (
             <button onClick={onLeave} style={{ ...primaryBtnStyle, flex: 1, height: 52, fontSize: 16, background: 'var(--soft)', color: 'var(--ink)', border: '1px solid var(--hair-2)' }}>
-              ✓ You're in · Leave
+              ✓ You&apos;re in · Leave
             </button>
           ) : (
             <button onClick={onJoin} style={{ ...primaryBtnStyle, flex: 1, height: 52, fontSize: 16 }}>
-              I'm in
+              I&apos;m in
             </button>
           )}
           <button style={{ ...secondaryBtnStyle, height: 52, padding: '0 18px' }}>Maybe</button>

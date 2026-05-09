@@ -114,7 +114,7 @@ export function ProfileScreen({ params }) {
               border: '1px dashed var(--hair-2)', color: 'var(--muted)',
               fontSize: 13, marginTop: 6, lineHeight: 1.4,
             }}>
-              {user.name.split(' ')[0]} is going to 1 event posted by people you don't follow. Follow them to see it.
+              {user.name.split(' ')[0]} is going to 1 event posted by people you don&apos;t follow. Follow them to see it.
             </div>
           </div>
         </div>
