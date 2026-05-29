@@ -17,7 +17,7 @@ export function getUser(id) {
   return USERS.find(u => u.id === id) || USERS[0];
 }
 
-function buildDateLabel(offset) {
+export function buildDateLabel(offset) {
   const d = new Date();
   d.setDate(d.getDate() + offset);
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];

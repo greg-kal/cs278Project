@@ -1,5 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useCallback } from 'react';
+import { supabase } from './supabase';
+import { EVENTS, buildDateLabel } from './data';
 
 const AppContext = createContext(null);
 
@@ -15,6 +17,7 @@ export function AppProvider({ children }) {
   const [stacks, setStacks] = useState(INITIAL_STACKS);
   const [modal, setModal] = useState(null);
 
+  const [events, setEvents] = useState(EVENTS);
   const [favorites, setFavorites] = useState(new Set(['maya', 'greg', 'sam', 'jess']));
   const [joined, setJoined] = useState(new Set(['dinner']));
   const [promptDismissed, setPromptDismissed] = useState(false);
@@ -78,6 +81,54 @@ export function AppProvider({ children }) {
     setCommentLikes(prev => ({ ...prev, [commentId]: !prev[commentId] }));
   }, []);
 
+  const addEvent = useCallback(async (formData, userId) => {
+    if (!supabase || !userId) return { error: { message: 'Not configured or not signed in' } };
+    if (!formData.title.trim()) return { error: { message: 'Title is required' } };
+
+    const d = new Date();
+    if (formData.when === 'tomorrow') d.setDate(d.getDate() + 1);
+    const m = formData.startTime.match(/(\d+):(\d+)\s*(am|pm)/i);
+    if (m) {
+      let h = parseInt(m[1]);
+      const min = parseInt(m[2]);
+      if (m[3].toLowerCase() === 'pm' && h !== 12) h += 12;
+      if (m[3].toLowerCase() === 'am' && h === 12) h = 0;
+      d.setHours(h, min, 0, 0);
+    }
+
+    const { data, error } = await supabase.from('events').insert({
+      host_id: userId,
+      title: formData.title.trim(),
+      starts_at: d.toISOString(),
+      visibility: formData.visibility,
+      place: formData.place.trim() || null,
+      description: formData.note.trim() || null,
+      duration_label: formData.duration || null,
+    }).select().single();
+
+    if (error) return { error };
+
+    const offset = formData.when === 'tomorrow' ? 1 : 0;
+    setEvents(prev => [{
+      id: data.id,
+      title: formData.title.trim(),
+      time: formData.startTime,
+      dateKey: formData.when === 'today' ? 'today' : 'tomorrow',
+      dateLabel: buildDateLabel(offset),
+      hostId: userId,
+      place: formData.place.trim() || '',
+      duration: formData.duration || '',
+      durationNote: '',
+      visibility: formData.visibility,
+      photo: 'green',
+      goingIds: [],
+      description: formData.note.trim() || '',
+      comments: [],
+    }, ...prev]);
+
+    return { data };
+  }, []);
+
   return (
     <AppContext.Provider value={{
       tab, setTab,
@@ -86,6 +137,7 @@ export function AppProvider({ children }) {
       modal, openModal, closeModal,
       favorites, toggleFavorite,
       joined, joinEvent, leaveEvent,
+      events, addEvent,
       promptDismissed, setPromptDismissed,
       activeDayIndex, setActiveDayIndex,
       commentLikes, toggleCommentLike,

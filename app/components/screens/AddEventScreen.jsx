@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { USUALS } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
+import { useAuth } from '../../lib/AuthContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Icon } from '../ui/Icon';
 
@@ -91,7 +92,23 @@ function UsualsScreen({ onClose, onSelectUsual, onScratch }) {
 }
 
 function AddForm({ formData, setFormData, onClose, onBack }) {
+  const { addEvent } = useApp();
+  const { session } = useAuth();
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState(null);
   const set = (k, v) => setFormData(f => ({ ...f, [k]: v }));
+
+  const handlePost = async () => {
+    setPosting(true);
+    setPostError(null);
+    const result = await addEvent(formData, session?.user?.id);
+    setPosting(false);
+    if (result?.error) {
+      setPostError(result.error.message || 'Failed to save');
+    } else {
+      onClose();
+    }
+  };
 
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
@@ -99,8 +116,17 @@ function AddForm({ formData, setFormData, onClose, onBack }) {
       <div style={{ padding: '4px 16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <button onClick={onBack} style={ghostTextBtn}>Cancel</button>
         <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>New event</div>
-        <button onClick={onClose} style={{ background: 'var(--ink)', color: 'var(--paper)', border: 0, padding: '0 16px', borderRadius: 999, height: 36, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Post</button>
+        <button
+          onClick={handlePost}
+          disabled={posting || !formData.title.trim()}
+          style={{ background: 'var(--ink)', color: 'var(--paper)', border: 0, padding: '0 16px', borderRadius: 999, height: 36, fontSize: 14, fontWeight: 600, cursor: posting ? 'default' : 'pointer', opacity: (!formData.title.trim() || posting) ? 0.5 : 1 }}
+        >
+          {posting ? 'Posting…' : 'Post'}
+        </button>
       </div>
+      {postError && (
+        <div style={{ padding: '6px 16px', fontSize: 13, color: 'red' }}>{postError}</div>
+      )}
 
       <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none', padding: '14px 18px 40px' }}>
         <Label>what</Label>

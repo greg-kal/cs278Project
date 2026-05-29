@@ -1,5 +1,5 @@
 'use client';
-import { EVENTS, getDayStrip } from '../../lib/data';
+import { getDayStrip } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
 import { StatusBar } from '../ui/StatusBar';
 import { DayStrip } from '../ui/DayStrip';
@@ -8,12 +8,12 @@ import { EventRow } from '../EventRow';
 import { DailyPromptCard } from '../DailyPromptCard';
 
 export function FeedScreen() {
-  const { activeDayIndex } = useApp();
+  const { activeDayIndex, events } = useApp();
   const days = getDayStrip();
   const activeDay = days[activeDayIndex];
 
-  const visibleToday = EVENTS.filter(e => e.dateKey === 'today');
-  const visibleTomorrow = EVENTS.filter(e => e.dateKey === 'tomorrow');
+  const visibleToday = events.filter(e => e.dateKey === 'today');
+  const visibleTomorrow = events.filter(e => e.dateKey === 'tomorrow');
 
   // Date header: if activeDay is today (index 0), show "Today."
   const dateTag = activeDayIndex === 0
@@ -23,7 +23,7 @@ export function FeedScreen() {
     : `${activeDay.dayName.charAt(0) + activeDay.dayName.slice(1).toLowerCase()} ${activeDay.dayNum}.`;
 
   const subTag = activeDayIndex === 0
-    ? EVENTS[0]?.dateLabel
+    ? visibleToday[0]?.dateLabel
     : activeDay.dayName.toLowerCase() + ' ' + activeDay.dayNum;
 
   const totalVisible = activeDayIndex === 0 ? visibleToday.length : activeDayIndex === 1 ? visibleTomorrow.length : 0;
