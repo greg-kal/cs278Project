@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { supabase } from './supabase';
-import { EVENTS, USERS, buildDateLabel } from './data';
+import { buildDateLabel } from './data';
 
 const AppContext = createContext(null);
 
@@ -43,9 +43,11 @@ export function AppProvider({ children }) {
   const [modal, setModal] = useState(null);
 
   const [profile, setProfile] = useState(null);
-  const [events, setEvents] = useState(EVENTS);
-  const [favorites, setFavorites] = useState(new Set(['maya', 'greg', 'sam', 'jess']));
-  const [joined, setJoined] = useState(new Set(['dinner']));
+  const [profileCache, setProfileCache] = useState({});
+  const [events, setEvents] = useState([]);
+  const [favorites, setFavorites] = useState(new Set());
+  const [following, setFollowing] = useState(new Set());
+  const [joined, setJoined] = useState(new Set());
   const [promptDismissed, setPromptDismissed] = useState(false);
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [commentLikes, setCommentLikes] = useState({});
@@ -65,34 +67,53 @@ export function AppProvider({ children }) {
       const to = new Date(from); to.setDate(from.getDate() + 7);
       const { data: rows } = await supabase
         .from('events')
-        .select('*')
+        .select('*, host:host_id(id, name, handle, ch, tone)')
         .gte('starts_at', from.toISOString())
         .lt('starts_at', to.toISOString())
         .order('starts_at');
-      if (rows && rows.length > 0) {
-        const real = rows.map(row => supabaseEventToLocal(row));
-        setEvents(prev => {
-          const existingIds = new Set(prev.map(e => e.id));
-          return [...prev, ...real.filter(e => !existingIds.has(e.id))];
-        });
+      if (rows) {
+        const newProfiles = {};
+        rows.forEach(row => { if (row.host) newProfiles[row.host.id] = row.host; });
+        setProfileCache(prev => ({ ...prev, ...newProfiles }));
+        setEvents(rows.map(row => supabaseEventToLocal(row)));
       }
 
-      // Restore which events the user has RSVP'd to
+      // Load favorites
+      const { data: favRows } = await supabase
+        .from('favorites').select('favorite_id').eq('user_id', userId);
+      if (favRows && favRows.length > 0) {
+        setFavorites(new Set(favRows.map(r => r.favorite_id)));
+      }
+
+      // Load follows
+      const { data: followRows } = await supabase
+        .from('follows').select('following_id').eq('follower_id', userId);
+      if (followRows && followRows.length > 0) {
+        setFollowing(new Set(followRows.map(r => r.following_id)));
+      }
+
+      // Load RSVPs
       const { data: rsvpRows } = await supabase
         .from('rsvps').select('event_id').eq('user_id', userId);
       if (rsvpRows && rsvpRows.length > 0) {
-        setJoined(prev => new Set([...prev, ...rsvpRows.map(r => r.event_id)]));
+        setJoined(new Set(rsvpRows.map(r => r.event_id)));
       }
     });
   }, []);
 
-  // Returns real profile if id matches logged-in user, else looks up mock USERS, else placeholder
   const findUser = useCallback((id) => {
     if (profile && id === profile.id) return profile;
-    return USERS.find(u => u.id === id) || { id, name: 'Someone', handle: '@user', ch: '?', tone: 'b1' };
-  }, [profile]);
+    if (profileCache[id]) return profileCache[id];
+    return { id, name: '…', handle: '@user', ch: '?', tone: 'b1' };
+  }, [profile, profileCache]);
 
-  // Looks up an event from context state (works for both mock string ids and real UUIDs)
+  const cacheProfiles = useCallback((profilesArray) => {
+    setProfileCache(prev => ({
+      ...prev,
+      ...Object.fromEntries(profilesArray.map(p => [p.id, p])),
+    }));
+  }, []);
+
   const getEventById = useCallback((id) => events.find(e => e.id === id), [events]);
 
   const current = stacks[tab][stacks[tab].length - 1];
@@ -139,6 +160,27 @@ export function AppProvider({ children }) {
           await supabase.from('favorites').delete().eq('user_id', user.id).eq('favorite_id', userId);
         } else {
           await supabase.from('favorites').upsert({ user_id: user.id, favorite_id: userId });
+        }
+      }
+    }
+  }, []);
+
+  const toggleFollow = useCallback(async (targetId) => {
+    let wasFollowing = false;
+    setFollowing(prev => {
+      wasFollowing = prev.has(targetId);
+      const next = new Set(prev);
+      wasFollowing ? next.delete(targetId) : next.add(targetId);
+      return next;
+    });
+    if (supabase && isUUID(targetId)) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        if (wasFollowing) {
+          await supabase.from('follows').delete()
+            .eq('follower_id', user.id).eq('following_id', targetId);
+        } else {
+          await supabase.from('follows').insert({ follower_id: user.id, following_id: targetId });
         }
       }
     }
@@ -284,8 +326,9 @@ export function AppProvider({ children }) {
       stacks, current, canGoBack,
       navigate, goBack,
       modal, openModal, closeModal,
-      profile, findUser,
+      profile, findUser, cacheProfiles,
       favorites, toggleFavorite,
+      following, toggleFollow,
       joined, joinEvent, leaveEvent,
       events, addEvent, getEventById,
       addComment,

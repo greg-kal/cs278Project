@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { USUALS } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
 import { useAuth } from '../../lib/AuthContext';
 import { StatusBar } from '../ui/StatusBar';
@@ -19,6 +18,13 @@ export function AddEventScreen({ onClose }) {
 
   return <UsualsScreen onClose={onClose} onSelectUsual={(u) => { setFormData(f => ({ ...f, title: u.name })); setView('form'); }} onScratch={() => setView('form')} />;
 }
+
+const USUALS = [
+  { icon: '🍽', name: 'Dinner',     sub: 'open invite · ~6:30p' },
+  { icon: '🏋', name: 'Gym',        sub: 'arc · ~7p' },
+  { icon: '📚', name: 'Study sesh', sub: 'green library · 2h' },
+  { icon: '🌅', name: 'Brunch',     sub: 'coupa · weekends' },
+];
 
 function UsualsScreen({ onClose, onSelectUsual, onScratch }) {
   return (

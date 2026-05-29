@@ -5,11 +5,13 @@ import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 
 export function ProfileScreen({ params }) {
-  const { goBack, favorites, toggleFavorite, navigate, findUser, events } = useApp();
+  const { goBack, favorites, toggleFavorite, following, toggleFollow, navigate, findUser, events, profile } = useApp();
   const user = findUser(params.userId);
   if (!user) return null;
 
   const isFav = favorites.has(user.id);
+  const isFollowing = following.has(user.id);
+  const isSelf = profile && user.id === profile.id;
 
   const userEvents = events.filter(e =>
     e.goingIds.includes(user.id) || e.hostId === user.id
@@ -34,29 +36,36 @@ export function ProfileScreen({ params }) {
             <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
               {user.name}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--muted)' }}>{user.handle} · 12 mutual</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button
-                onClick={() => toggleFavorite(user.id)}
-                style={{
-                  height: 36, fontSize: 13, padding: '0 14px', borderRadius: 999,
-                  border: isFav ? '1px solid var(--ink)' : '1px solid var(--hair-2)',
-                  background: isFav ? 'var(--ink)' : 'var(--card)',
-                  color: isFav ? 'var(--paper)' : 'var(--ink)',
-                  fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                }}
-              >
-                {isFav ? '★ Favorited' : '☆ Favorite'}
-              </button>
-              <button style={{
-                height: 36, fontSize: 13, padding: '0 14px', borderRadius: 999,
-                border: '1px solid var(--hair-2)', background: 'var(--card)',
-                color: 'var(--ink)', fontWeight: 600, cursor: 'pointer',
-              }}>
-                Message
-              </button>
-            </div>
+            <div style={{ fontSize: 13, color: 'var(--muted)' }}>{user.handle}</div>
+            {!isSelf && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <button
+                  onClick={() => toggleFollow(user.id)}
+                  style={{
+                    height: 36, fontSize: 13, padding: '0 14px', borderRadius: 999,
+                    border: isFollowing ? '1px solid var(--ink)' : '1px solid var(--hair-2)',
+                    background: isFollowing ? 'var(--ink)' : 'var(--card)',
+                    color: isFollowing ? 'var(--paper)' : 'var(--ink)',
+                    fontWeight: 600, cursor: 'pointer',
+                  }}
+                >
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+                <button
+                  onClick={() => toggleFavorite(user.id)}
+                  style={{
+                    height: 36, fontSize: 13, padding: '0 14px', borderRadius: 999,
+                    border: isFav ? '1px solid var(--ink)' : '1px solid var(--hair-2)',
+                    background: isFav ? 'var(--ink)' : 'var(--card)',
+                    color: isFav ? 'var(--paper)' : 'var(--ink)',
+                    fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}
+                >
+                  {isFav ? '★ Favorited' : '☆ Favorite'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -104,18 +113,6 @@ export function ProfileScreen({ params }) {
             </div>
           )}
 
-          <div style={{ marginTop: 18 }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-              1 hidden
-            </div>
-            <div style={{
-              padding: '12px 14px', borderRadius: 14,
-              border: '1px dashed var(--hair-2)', color: 'var(--muted)',
-              fontSize: 13, marginTop: 6, lineHeight: 1.4,
-            }}>
-              {user.name.split(' ')[0]} is going to 1 event posted by people you don&apos;t follow. Follow them to see it.
-            </div>
-          </div>
         </div>
       </div>
     </div>

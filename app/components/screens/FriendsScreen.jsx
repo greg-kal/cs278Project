@@ -1,19 +1,36 @@
 'use client';
-import { useState } from 'react';
-import { USERS } from '../../lib/data';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { useApp } from '../../lib/AppContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 
 export function FriendsScreen() {
-  const { favorites, toggleFavorite, navigate, events } = useApp();
+  const { favorites, toggleFavorite, navigate, events, profile, cacheProfiles } = useApp();
   const [search, setSearch] = useState('');
+  const [profiles, setProfiles] = useState([]);
 
-  const others = USERS.filter(u => u.id !== 'alex');
+  useEffect(() => {
+    if (!supabase || !profile) return;
+    supabase
+      .from('profiles')
+      .select('*')
+      .neq('id', profile.id)
+      .then(({ data }) => {
+        if (data) {
+          setProfiles(data);
+          cacheProfiles(data);
+        }
+      });
+  }, [profile, cacheProfiles]);
+
   const filtered = search
-    ? others.filter(u => u.name.toLowerCase().includes(search.toLowerCase()) || u.handle.includes(search.toLowerCase()))
-    : others;
+    ? profiles.filter(u =>
+        u.name.toLowerCase().includes(search.toLowerCase()) ||
+        u.handle.toLowerCase().includes(search.toLowerCase())
+      )
+    : profiles;
 
   const favUsers = filtered.filter(u => favorites.has(u.id));
   const restUsers = filtered.filter(u => !favorites.has(u.id));
@@ -93,6 +110,12 @@ export function FriendsScreen() {
                 onTap={() => navigate('profile', { userId: u.id })} />
             ))}
           </>
+        )}
+
+        {profiles.length === 0 && (
+          <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>
+            No other users yet.
+          </div>
         )}
       </div>
     </div>

@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ACTIVITY } from '../../lib/data';
 import { supabase } from '../../lib/supabase';
 import { useApp } from '../../lib/AppContext';
 import { StatusBar } from '../ui/StatusBar';
@@ -11,7 +10,7 @@ const FILTERS = ['All', 'Favorites', 'Mentions'];
 export function ActivityScreen() {
   const { navigate, favorites, findUser, getEventById } = useApp();
   const [filter, setFilter] = useState('All');
-  const [activity, setActivity] = useState(ACTIVITY);
+  const [activity, setActivity] = useState([]);
 
   useEffect(() => {
     if (!supabase) return;
