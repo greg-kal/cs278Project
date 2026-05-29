@@ -1,19 +1,37 @@
 'use client';
 import { useState } from 'react';
-import { getEvent, getUser } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
+import { useAuth } from '../../lib/AuthContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 
 export function CommentsScreen({ params }) {
-  const { goBack, commentLikes, toggleCommentLike } = useApp();
+  const { goBack, commentLikes, toggleCommentLike, getEventById, findUser, profile, addComment } = useApp();
+  const { session } = useAuth();
   const [draftText, setDraftText] = useState('');
-  const event = getEvent(params.eventId);
+  const [posting, setPosting] = useState(false);
+
+  const event = getEventById(params.eventId);
   if (!event) return null;
 
   const totalGoing = event.goingIds.length;
-  const me = getUser('alex');
+  const me = profile || { ch: '?', tone: 'b1' };
+
+  const handleSend = async () => {
+    if (!draftText.trim() || posting) return;
+    setPosting(true);
+    const result = await addComment(event.id, draftText, session?.user?.id);
+    setPosting(false);
+    if (!result?.error) setDraftText('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
@@ -30,7 +48,7 @@ export function CommentsScreen({ params }) {
             fontFamily: 'var(--font-mono)', fontSize: 10,
             letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)',
           }}>
-            {event.comments.length} comments · {totalGoing} going
+            {(event.comments || []).length} comments · {totalGoing} going
           </div>
         </div>
       </div>
@@ -39,13 +57,13 @@ export function CommentsScreen({ params }) {
 
       {/* Comments list */}
       <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none', padding: '14px 18px 100px' }}>
-        {event.comments.length === 0 ? (
+        {(event.comments || []).length === 0 ? (
           <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>
             No comments yet. Be the first!
           </div>
         ) : (
-          event.comments.map((c) => {
-            const user = getUser(c.userId);
+          (event.comments || []).map((c) => {
+            const user = findUser(c.userId);
             const liked = commentLikes[c.id];
             return (
               <div key={c.id} style={{ display: 'flex', gap: 10, paddingBottom: 14 }}>
@@ -87,6 +105,7 @@ export function CommentsScreen({ params }) {
             <input
               value={draftText}
               onChange={e => setDraftText(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Write something…"
               style={{
                 background: 'var(--card)', border: '1px solid var(--hair-2)',
@@ -97,14 +116,16 @@ export function CommentsScreen({ params }) {
               }}
             />
             <button
+              onClick={handleSend}
+              disabled={!draftText.trim() || posting}
               style={{
                 position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
                 width: 36, height: 36, borderRadius: 999,
-                background: draftText ? 'var(--ink)' : 'var(--soft)',
-                color: draftText ? 'var(--paper)' : 'var(--muted)',
+                background: draftText.trim() ? 'var(--ink)' : 'var(--soft)',
+                color: draftText.trim() ? 'var(--paper)' : 'var(--muted)',
                 border: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
+                cursor: draftText.trim() ? 'pointer' : 'default',
                 transition: 'background var(--m-base), color var(--m-base)',
               }}
             >

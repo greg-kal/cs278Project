@@ -1,6 +1,6 @@
 'use client';
-import { EVENTS, ME } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
+import { useAuth } from '../../lib/AuthContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Avatar } from '../ui/Avatar';
 
@@ -12,8 +12,10 @@ const SETTINGS = [
 ];
 
 export function YouScreen() {
-  const { joined, favorites } = useApp();
-  const myEvents = EVENTS.filter(e => joined.has(e.id) || e.hostId === 'alex');
+  const { joined, favorites, profile, events } = useApp();
+  const { signOut } = useAuth();
+  const me = profile || { name: '…', handle: '', ch: '?', tone: 'b1', id: null };
+  const myEvents = events.filter(e => joined.has(e.id) || (me.id && e.hostId === me.id));
 
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
@@ -24,24 +26,24 @@ export function YouScreen() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: 'var(--ink)' }}>
-              {ME.name}
+              {me.name}
             </div>
             <div style={{
               fontFamily: 'var(--font-mono)', fontSize: 10,
               letterSpacing: '.08em', textTransform: 'uppercase',
               color: 'var(--muted)', marginTop: 2,
             }}>
-              {ME.handle} · 24 friends
+              {me.handle}
             </div>
           </div>
-          <Avatar ch={ME.ch} tone={ME.tone} size={56} />
+          <Avatar ch={me.ch} tone={me.tone} size={56} />
         </div>
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginTop: 14 }}>
           {[
-            { n: 'Posted', v: 14 },
-            { n: 'Joined', v: joined.size + 32 },
+            { n: 'Posted', v: events.filter(e => me.id && e.hostId === me.id).length },
+            { n: 'Joined', v: joined.size },
             { n: '★ Favs', v: favorites.size },
           ].map((s, i) => (
             <div key={i} style={{
@@ -96,12 +98,17 @@ export function YouScreen() {
             borderRadius: 18, boxShadow: 'var(--e-1)', marginTop: 6,
           }}>
             {SETTINGS.map((r, i) => (
-              <div key={i} style={{
-                padding: '14px 16px',
-                borderTop: i ? '1px solid var(--hair)' : 'none',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }}>
-                <span style={{ fontSize: 14, color: 'var(--ink)' }}>{r}</span>
+              <div
+                key={i}
+                onClick={r === 'Sign out' ? signOut : undefined}
+                style={{
+                  padding: '14px 16px',
+                  borderTop: i ? '1px solid var(--hair)' : 'none',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  cursor: r === 'Sign out' ? 'pointer' : 'default',
+                }}
+              >
+                <span style={{ fontSize: 14, color: r === 'Sign out' ? 'var(--accent-ink)' : 'var(--ink)' }}>{r}</span>
                 <span style={{ color: 'var(--muted)', fontSize: 18 }}>›</span>
               </div>
             ))}

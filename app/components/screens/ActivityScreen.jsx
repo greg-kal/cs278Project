@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
-import { ACTIVITY, getUser, getEvent } from '../../lib/data';
+import { useState, useEffect } from 'react';
+import { ACTIVITY } from '../../lib/data';
+import { supabase } from '../../lib/supabase';
 import { useApp } from '../../lib/AppContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Avatar } from '../ui/Avatar';
@@ -8,10 +9,35 @@ import { Avatar } from '../ui/Avatar';
 const FILTERS = ['All', 'Favorites', 'Mentions'];
 
 export function ActivityScreen() {
-  const { navigate, favorites } = useApp();
+  const { navigate, favorites, findUser, getEventById } = useApp();
   const [filter, setFilter] = useState('All');
+  const [activity, setActivity] = useState(ACTIVITY);
 
-  const filtered = ACTIVITY.filter(item => {
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data?.user) return;
+      const { data: rows } = await supabase
+        .from('activity')
+        .select('*, actor:actor_id(id, name, handle, ch, tone)')
+        .eq('target_user_id', data.user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (rows && rows.length > 0) {
+        setActivity(rows.map(r => ({
+          id: r.id,
+          userId: r.actor?.id || r.actor_id,
+          eventId: r.event_id,
+          message: r.message,
+          subtext: r.subtext,
+          timeLabel: formatTimeAgo(r.created_at),
+          _actor: r.actor,
+        })));
+      }
+    });
+  }, []);
+
+  const filtered = activity.filter(item => {
     if (filter === 'Favorites') return favorites.has(item.userId);
     if (filter === 'Mentions') return item.type === 'mention';
     return true;
@@ -57,8 +83,8 @@ export function ActivityScreen() {
           </div>
         ) : (
           filtered.map(item => {
-            const user = getUser(item.userId);
-            const event = item.eventId ? getEvent(item.eventId) : null;
+            const user = item._actor || findUser(item.userId);
+            const event = item.eventId ? getEventById(item.eventId) : null;
             return (
               <button
                 key={item.id}
@@ -70,10 +96,10 @@ export function ActivityScreen() {
                   width: '100%', textAlign: 'left', cursor: event ? 'pointer' : 'default',
                 }}
               >
-                <Avatar ch={user.ch} tone={user.tone} size={36} />
+                <Avatar ch={user.ch || '?'} tone={user.tone || 'b1'} size={36} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, color: 'var(--ink)' }}>
-                    <b>{user.name}</b>{' '}
+                    <b>{user.name || 'Someone'}</b>{' '}
                     <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{item.message}</span>
                   </div>
                   {item.subtext && (
@@ -96,4 +122,12 @@ export function ActivityScreen() {
       </div>
     </div>
   );
+}
+
+function formatTimeAgo(iso) {
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+  return `${Math.floor(diff / 86400)}d`;
 }

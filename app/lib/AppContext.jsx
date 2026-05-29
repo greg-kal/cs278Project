@@ -1,7 +1,7 @@
 'use client';
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { supabase } from './supabase';
-import { EVENTS, buildDateLabel } from './data';
+import { EVENTS, USERS, buildDateLabel } from './data';
 
 const AppContext = createContext(null);
 
@@ -12,17 +12,38 @@ const INITIAL_STACKS = {
   you:      [{ screen: 'you',      params: {} }],
 };
 
+const isUUID = id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id));
+
 export function AppProvider({ children }) {
   const [tab, setTabState] = useState('feed');
   const [stacks, setStacks] = useState(INITIAL_STACKS);
   const [modal, setModal] = useState(null);
 
+  const [profile, setProfile] = useState(null);
   const [events, setEvents] = useState(EVENTS);
   const [favorites, setFavorites] = useState(new Set(['maya', 'greg', 'sam', 'jess']));
   const [joined, setJoined] = useState(new Set(['dinner']));
   const [promptDismissed, setPromptDismissed] = useState(false);
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [commentLikes, setCommentLikes] = useState({});
+
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data?.user) return;
+      supabase.from('profiles').select().eq('id', data.user.id).single()
+        .then(({ data: p }) => { if (p) setProfile(p); });
+    });
+  }, []);
+
+  // Returns real profile if id matches logged-in user, else looks up mock USERS, else placeholder
+  const findUser = useCallback((id) => {
+    if (profile && id === profile.id) return profile;
+    return USERS.find(u => u.id === id) || { id, name: 'Someone', handle: '@user', ch: '?', tone: 'b1' };
+  }, [profile]);
+
+  // Looks up an event from context state (works for both mock string ids and real UUIDs)
+  const getEventById = useCallback((id) => events.find(e => e.id === id), [events]);
 
   const current = stacks[tab][stacks[tab].length - 1];
   const canGoBack = stacks[tab].length > 1;
@@ -53,32 +74,92 @@ export function AppProvider({ children }) {
 
   const closeModal = useCallback(() => setModal(null), []);
 
-  const toggleFavorite = useCallback((userId) => {
+  const toggleFavorite = useCallback(async (userId) => {
+    let wasIn = false;
     setFavorites(prev => {
+      wasIn = prev.has(userId);
       const next = new Set(prev);
-      next.has(userId) ? next.delete(userId) : next.add(userId);
+      wasIn ? next.delete(userId) : next.add(userId);
       return next;
     });
+    if (supabase && isUUID(userId)) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        if (wasIn) {
+          supabase.from('favorites').delete().eq('user_id', user.id).eq('favorite_id', userId);
+        } else {
+          supabase.from('favorites').upsert({ user_id: user.id, favorite_id: userId });
+        }
+      }
+    }
   }, []);
 
-  const joinEvent = useCallback((eventId) => {
-    setJoined(prev => {
-      const next = new Set(prev);
-      next.add(eventId);
-      return next;
-    });
+  const joinEvent = useCallback(async (eventId) => {
+    setJoined(prev => new Set([...prev, eventId]));
+    if (supabase && isUUID(eventId)) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('rsvps').upsert({ event_id: eventId, user_id: user.id });
+        setEvents(prev => prev.map(e =>
+          e.id === eventId && !e.goingIds.includes(user.id)
+            ? { ...e, goingIds: [...e.goingIds, user.id] }
+            : e
+        ));
+      }
+    }
   }, []);
 
-  const leaveEvent = useCallback((eventId) => {
+  const leaveEvent = useCallback(async (eventId) => {
     setJoined(prev => {
       const next = new Set(prev);
       next.delete(eventId);
       return next;
     });
+    if (supabase && isUUID(eventId)) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('rsvps').delete().eq('event_id', eventId).eq('user_id', user.id);
+        setEvents(prev => prev.map(e =>
+          e.id === eventId
+            ? { ...e, goingIds: e.goingIds.filter(id => id !== user.id) }
+            : e
+        ));
+      }
+    }
   }, []);
 
-  const toggleCommentLike = useCallback((commentId) => {
-    setCommentLikes(prev => ({ ...prev, [commentId]: !prev[commentId] }));
+  const toggleCommentLike = useCallback(async (commentId) => {
+    let wasLiked = false;
+    setCommentLikes(prev => {
+      wasLiked = !!prev[commentId];
+      return { ...prev, [commentId]: !prev[commentId] };
+    });
+    if (supabase && isUUID(commentId)) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        if (wasLiked) {
+          supabase.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', user.id);
+        } else {
+          supabase.from('comment_likes').insert({ comment_id: commentId, user_id: user.id });
+        }
+      }
+    }
+  }, []);
+
+  const addComment = useCallback(async (eventId, text, userId) => {
+    if (!supabase || !userId || !text.trim()) return { error: { message: 'Missing required data' } };
+    const { data, error } = await supabase.from('comments').insert({
+      event_id: eventId,
+      user_id: userId,
+      text: text.trim(),
+    }).select().single();
+    if (error) return { error };
+    setEvents(prev => prev.map(e =>
+      e.id === eventId
+        ? { ...e, comments: [...(e.comments || []), { id: data.id, userId, text: text.trim(), timeLabel: 'just now', likes: 0 }] }
+        : e
+    ));
+    return { data };
   }, []);
 
   const addEvent = useCallback(async (formData, userId) => {
@@ -135,9 +216,11 @@ export function AppProvider({ children }) {
       stacks, current, canGoBack,
       navigate, goBack,
       modal, openModal, closeModal,
+      profile, findUser,
       favorites, toggleFavorite,
       joined, joinEvent, leaveEvent,
-      events, addEvent,
+      events, addEvent, getEventById,
+      addComment,
       promptDismissed, setPromptDismissed,
       activeDayIndex, setActiveDayIndex,
       commentLikes, toggleCommentLike,

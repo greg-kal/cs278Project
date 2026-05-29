@@ -1,19 +1,17 @@
 'use client';
-import { getEvent, getUser, EVENTS } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 
 export function RsvpConfirmSheet({ params, onClose }) {
-  const { navigate, joinEvent } = useApp();
-  const event = getEvent(params.eventId);
+  const { navigate, joinEvent, getEventById, findUser, events } = useApp();
+  const event = getEventById(params.eventId);
   if (!event) return null;
 
-  const host = getUser(event.hostId);
+  const host = findUser(event.hostId);
   const totalGoing = event.goingIds.length + 1;
 
-  // Suggest the next event on the same day
-  const suggestion = EVENTS.find(e => e.id !== event.id && e.dateKey === event.dateKey);
+  const suggestion = events.find(e => e.id !== event.id && e.dateKey === event.dateKey);
 
   const handleDone = () => {
     onClose();
@@ -111,7 +109,7 @@ export function RsvpConfirmSheet({ params, onClose }) {
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{suggestion.title}</div>
                 <div style={{ fontSize: 12, color: 'var(--muted)' }}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{suggestion.time}</span>
-                  {' · '}{getUser(suggestion.hostId).name} is hosting
+                  {' · '}{findUser(suggestion.hostId).name} is hosting
                 </div>
               </div>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--accent-ink)', fontWeight: 600 }}>+ join</span>

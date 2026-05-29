@@ -1,5 +1,4 @@
 'use client';
-import { getEvent, getUser } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Avatar, AvatarStack } from '../ui/Avatar';
@@ -12,13 +11,13 @@ const photoStyle = {
 };
 
 export function EventDetailScreen({ params }) {
-  const { goBack, navigate, joined, joinEvent, leaveEvent, openModal } = useApp();
-  const event = getEvent(params.eventId);
+  const { goBack, navigate, joined, joinEvent, leaveEvent, openModal, getEventById, findUser } = useApp();
+  const event = getEventById(params.eventId);
   if (!event) return null;
 
-  const host = getUser(event.hostId);
+  const host = findUser(event.hostId);
   const isJoined = joined.has(event.id);
-  const goingUsers = event.goingIds.map(getUser);
+  const goingUsers = event.goingIds.map(id => findUser(id));
   const displayUsers = goingUsers.slice(0, 6);
   const extraCount = Math.max(0, goingUsers.length - 6);
   const totalGoing = event.goingIds.length + (isJoined && !event.goingIds.includes('alex') ? 1 : 0);
