@@ -1,5 +1,4 @@
 'use client';
-import { getUser } from '../lib/data';
 import { useApp } from '../lib/AppContext';
 import { Avatar, AvatarStack } from './ui/Avatar';
 import { Icon } from './ui/Icon';
@@ -11,12 +10,13 @@ const photoStyle = {
 };
 
 export function EventRow({ event }) {
-  const { navigate, joined, joinEvent, openModal } = useApp();
-  const host = getUser(event.hostId);
+  const { navigate, joined, joinEvent, openModal, findUser, profile } = useApp();
+  const host = findUser(event.hostId);
   const isJoined = joined.has(event.id);
-  const goingUsers = event.goingIds.slice(0, 3).map(getUser);
+  const goingUsers = event.goingIds.slice(0, 3).map(id => findUser(id));
   const moreCount = Math.max(0, event.goingIds.length - 3);
-  const totalGoing = event.goingIds.length + (isJoined && !event.goingIds.includes('alex') ? 1 : 0);
+  const myId = profile?.id || 'alex';
+  const totalGoing = event.goingIds.length + (isJoined && !event.goingIds.includes(myId) ? 1 : 0);
 
   const handleJoin = (e) => {
     e.stopPropagation();

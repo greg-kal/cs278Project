@@ -1,18 +1,17 @@
 'use client';
-import { getUser, EVENTS } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 
 export function ProfileScreen({ params }) {
-  const { goBack, favorites, toggleFavorite, navigate } = useApp();
-  const user = getUser(params.userId);
+  const { goBack, favorites, toggleFavorite, navigate, findUser, events } = useApp();
+  const user = findUser(params.userId);
   if (!user) return null;
 
   const isFav = favorites.has(user.id);
 
-  const userEvents = EVENTS.filter(e =>
+  const userEvents = events.filter(e =>
     e.goingIds.includes(user.id) || e.hostId === user.id
   );
 
@@ -94,7 +93,7 @@ export function ProfileScreen({ params }) {
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{event.time}</span>
-                    {!isHost && <span> · by {getUser(event.hostId).name}</span>}
+                    {!isHost && <span> · by {findUser(event.hostId).name}</span>}
                   </div>
                 </button>
               );

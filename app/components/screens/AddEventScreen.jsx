@@ -92,7 +92,7 @@ function UsualsScreen({ onClose, onSelectUsual, onScratch }) {
 }
 
 function AddForm({ formData, setFormData, onClose, onBack }) {
-  const { addEvent } = useApp();
+  const { addEvent, setActiveDayIndex } = useApp();
   const { session } = useAuth();
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState(null);
@@ -106,6 +106,9 @@ function AddForm({ formData, setFormData, onClose, onBack }) {
     if (result?.error) {
       setPostError(result.error.message || 'Failed to save');
     } else {
+      // Navigate feed back to the day the event was posted on
+      if (formData.when === 'today') setActiveDayIndex(0);
+      else if (formData.when === 'tomorrow') setActiveDayIndex(1);
       onClose();
     }
   };
@@ -118,8 +121,8 @@ function AddForm({ formData, setFormData, onClose, onBack }) {
         <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>New event</div>
         <button
           onClick={handlePost}
-          disabled={posting || !formData.title.trim()}
-          style={{ background: 'var(--ink)', color: 'var(--paper)', border: 0, padding: '0 16px', borderRadius: 999, height: 36, fontSize: 14, fontWeight: 600, cursor: posting ? 'default' : 'pointer', opacity: (!formData.title.trim() || posting) ? 0.5 : 1 }}
+          disabled={posting || !formData.title.trim() || (formData.when === 'pick…' && !formData.customDate)}
+          style={{ background: 'var(--ink)', color: 'var(--paper)', border: 0, padding: '0 16px', borderRadius: 999, height: 36, fontSize: 14, fontWeight: 600, cursor: posting ? 'default' : 'pointer', opacity: (!formData.title.trim() || posting || (formData.when === 'pick…' && !formData.customDate)) ? 0.5 : 1 }}
         >
           {posting ? 'Posting…' : 'Post'}
         </button>

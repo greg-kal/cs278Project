@@ -136,9 +136,9 @@ export function AppProvider({ children }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         if (wasIn) {
-          supabase.from('favorites').delete().eq('user_id', user.id).eq('favorite_id', userId);
+          await supabase.from('favorites').delete().eq('user_id', user.id).eq('favorite_id', userId);
         } else {
-          supabase.from('favorites').upsert({ user_id: user.id, favorite_id: userId });
+          await supabase.from('favorites').upsert({ user_id: user.id, favorite_id: userId });
         }
       }
     }
@@ -188,9 +188,9 @@ export function AppProvider({ children }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         if (wasLiked) {
-          supabase.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', user.id);
+          await supabase.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', user.id);
         } else {
-          supabase.from('comment_likes').insert({ comment_id: commentId, user_id: user.id });
+          await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: user.id });
         }
       }
     }

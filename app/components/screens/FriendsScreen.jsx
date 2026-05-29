@@ -1,13 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { USERS, EVENTS } from '../../lib/data';
+import { USERS } from '../../lib/data';
 import { useApp } from '../../lib/AppContext';
 import { StatusBar } from '../ui/StatusBar';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 
 export function FriendsScreen() {
-  const { favorites, toggleFavorite, navigate } = useApp();
+  const { favorites, toggleFavorite, navigate, events } = useApp();
   const [search, setSearch] = useState('');
 
   const others = USERS.filter(u => u.id !== 'alex');
@@ -19,7 +19,7 @@ export function FriendsScreen() {
   const restUsers = filtered.filter(u => !favorites.has(u.id));
 
   const getUserStatus = (userId) => {
-    const userEvent = EVENTS.find(e => e.goingIds.includes(userId) || e.hostId === userId);
+    const userEvent = events.find(e => e.goingIds.includes(userId) || e.hostId === userId);
     if (!userEvent) return 'no plans posted today';
     const isHost = userEvent.hostId === userId;
     return `${isHost ? 'hosting' : 'going to'} ${userEvent.title.toLowerCase()} · ${userEvent.time.toLowerCase()}`;
