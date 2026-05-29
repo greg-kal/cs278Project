@@ -9,8 +9,8 @@ import { Icon } from '../ui/Icon';
 export function AddEventScreen({ onClose }) {
   const [view, setView] = useState('usuals'); // 'usuals' | 'form'
   const [formData, setFormData] = useState({
-    title: '', when: 'today', startTime: '6:30 PM', duration: '~ 1h 30m',
-    place: '', visibility: 'open', note: '',
+    title: '', when: 'today', startTime: '18:30', duration: '',
+    place: '', visibility: 'open', note: '', customDate: '',
   });
 
   if (view === 'form') {
@@ -150,21 +150,34 @@ function AddForm({ formData, setFormData, onClose, onBack }) {
 
         <Label style={{ marginTop: 18 }}>when</Label>
         <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-          {['Today','Tomorrow','Pick…'].map((w, i) => (
-            <button
-              key={i}
-              onClick={() => set('when', w.toLowerCase())}
-              style={{
-                ...pillBtn,
-                background: formData.when === w.toLowerCase() ? 'var(--ink)' : 'var(--card)',
-                color: formData.when === w.toLowerCase() ? 'var(--paper)' : 'var(--ink)',
-                border: `1px solid ${formData.when === w.toLowerCase() ? 'var(--ink)' : 'var(--hair-2)'}`,
-              }}
-            >
-              {w}
-            </button>
-          ))}
+          {['Today','Tomorrow','Pick…'].map((w, i) => {
+            const val = w.toLowerCase();
+            const active = formData.when === val;
+            return (
+              <button
+                key={i}
+                onClick={() => set('when', val)}
+                style={{
+                  ...pillBtn,
+                  background: active ? 'var(--ink)' : 'var(--card)',
+                  color: active ? 'var(--paper)' : 'var(--ink)',
+                  border: `1px solid ${active ? 'var(--ink)' : 'var(--hair-2)'}`,
+                }}
+              >
+                {w}
+              </button>
+            );
+          })}
         </div>
+        {formData.when === 'pick…' && (
+          <input
+            type="date"
+            value={formData.customDate}
+            onChange={e => set('customDate', e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+            style={{ ...inputStyle, marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: 15 }}
+          />
+        )}
         <div style={{
           background: 'var(--card)', border: '1px solid var(--hair)',
           borderRadius: 18, boxShadow: 'var(--e-1)',
@@ -173,16 +186,31 @@ function AddForm({ formData, setFormData, onClose, onBack }) {
         }}>
           <div>
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>Starts</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>
-              {formData.startTime}
-            </div>
+            <input
+              type="time"
+              value={formData.startTime}
+              onChange={e => set('startTime', e.target.value)}
+              style={{
+                fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 600, color: 'var(--ink)',
+                background: 'transparent', border: 0, outline: 'none', padding: 0,
+                cursor: 'pointer', marginTop: 2,
+              }}
+            />
           </div>
           <div style={{ width: 1, height: 40, background: 'var(--hair)' }} />
           <div>
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>Duration <span style={{ fontSize: 11 }}>(opt)</span></div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>
-              {formData.duration}
-            </div>
+            <input
+              type="text"
+              value={formData.duration}
+              onChange={e => set('duration', e.target.value)}
+              placeholder="e.g. 1h 30m"
+              style={{
+                fontFamily: 'var(--font-mono)', fontSize: 15, fontWeight: 600, color: 'var(--ink)',
+                background: 'transparent', border: 0, outline: 'none', padding: 0,
+                cursor: 'text', marginTop: 2, width: 100,
+              }}
+            />
           </div>
         </div>
 

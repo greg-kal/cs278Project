@@ -14,6 +14,29 @@ const INITIAL_STACKS = {
 
 const isUUID = id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id));
 
+function supabaseEventToLocal(row) {
+  const d = new Date(row.starts_at);
+  const todayMid = new Date(); todayMid.setHours(0, 0, 0, 0);
+  const dayOffset = Math.round((new Date(d).setHours(0,0,0,0) - todayMid) / 86400000);
+  const h = d.getHours(), m = d.getMinutes();
+  return {
+    id: row.id,
+    title: row.title,
+    time: `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`,
+    dateKey: dayOffset === 0 ? 'today' : dayOffset === 1 ? 'tomorrow' : row.starts_at.split('T')[0],
+    dateLabel: buildDateLabel(dayOffset),
+    hostId: row.host_id,
+    place: row.place || '',
+    duration: row.duration_label || '',
+    durationNote: '',
+    visibility: row.visibility,
+    photo: row.photo || 'green',
+    goingIds: [],
+    description: row.description || '',
+    comments: [],
+  };
+}
+
 export function AppProvider({ children }) {
   const [tab, setTabState] = useState('feed');
   const [stacks, setStacks] = useState(INITIAL_STACKS);
@@ -29,10 +52,37 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!data?.user) return;
-      supabase.from('profiles').select().eq('id', data.user.id).single()
-        .then(({ data: p }) => { if (p) setProfile(p); });
+      const userId = data.user.id;
+
+      // Load real profile
+      const { data: p } = await supabase.from('profiles').select().eq('id', userId).single();
+      if (p) setProfile(p);
+
+      // Load events visible to this user (today + next 7 days)
+      const from = new Date(); from.setHours(0, 0, 0, 0);
+      const to = new Date(from); to.setDate(from.getDate() + 7);
+      const { data: rows } = await supabase
+        .from('events')
+        .select('*')
+        .gte('starts_at', from.toISOString())
+        .lt('starts_at', to.toISOString())
+        .order('starts_at');
+      if (rows && rows.length > 0) {
+        const real = rows.map(row => supabaseEventToLocal(row));
+        setEvents(prev => {
+          const existingIds = new Set(prev.map(e => e.id));
+          return [...prev, ...real.filter(e => !existingIds.has(e.id))];
+        });
+      }
+
+      // Restore which events the user has RSVP'd to
+      const { data: rsvpRows } = await supabase
+        .from('rsvps').select('event_id').eq('user_id', userId);
+      if (rsvpRows && rsvpRows.length > 0) {
+        setJoined(prev => new Set([...prev, ...rsvpRows.map(r => r.event_id)]));
+      }
     });
   }, []);
 
@@ -166,16 +216,26 @@ export function AppProvider({ children }) {
     if (!supabase || !userId) return { error: { message: 'Not configured or not signed in' } };
     if (!formData.title.trim()) return { error: { message: 'Title is required' } };
 
+    // Build starts_at from when + startTime
     const d = new Date();
-    if (formData.when === 'tomorrow') d.setDate(d.getDate() + 1);
-    const m = formData.startTime.match(/(\d+):(\d+)\s*(am|pm)/i);
-    if (m) {
-      let h = parseInt(m[1]);
-      const min = parseInt(m[2]);
-      if (m[3].toLowerCase() === 'pm' && h !== 12) h += 12;
-      if (m[3].toLowerCase() === 'am' && h === 12) h = 0;
-      d.setHours(h, min, 0, 0);
+    if (formData.when === 'tomorrow') {
+      d.setDate(d.getDate() + 1);
+    } else if (formData.when === 'pick…' && formData.customDate) {
+      const [y, mo, day] = formData.customDate.split('-').map(Number);
+      d.setFullYear(y, mo - 1, day);
     }
+    // Parse time: accept '18:30' (24h) or '6:30 PM' (12h)
+    let th, tmin;
+    const t24 = formData.startTime.match(/^(\d{1,2}):(\d{2})$/);
+    const t12 = formData.startTime.match(/(\d+):(\d+)\s*(am|pm)/i);
+    if (t24) {
+      th = parseInt(t24[1]); tmin = parseInt(t24[2]);
+    } else if (t12) {
+      th = parseInt(t12[1]); tmin = parseInt(t12[2]);
+      if (t12[3].toLowerCase() === 'pm' && th !== 12) th += 12;
+      if (t12[3].toLowerCase() === 'am' && th === 12) th = 0;
+    }
+    if (th !== undefined) d.setHours(th, tmin, 0, 0);
 
     const { data, error } = await supabase.from('events').insert({
       host_id: userId,
@@ -184,21 +244,29 @@ export function AppProvider({ children }) {
       visibility: formData.visibility,
       place: formData.place.trim() || null,
       description: formData.note.trim() || null,
-      duration_label: formData.duration || null,
+      duration_label: formData.duration.trim() || null,
     }).select().single();
 
     if (error) return { error };
 
-    const offset = formData.when === 'tomorrow' ? 1 : 0;
+    // Compute dateKey relative to today
+    const todayMid = new Date(); todayMid.setHours(0, 0, 0, 0);
+    const eventDay = new Date(d); eventDay.setHours(0, 0, 0, 0);
+    const dayOffset = Math.round((eventDay - todayMid) / 86400000);
+    const dateKey = dayOffset === 0 ? 'today' : dayOffset === 1 ? 'tomorrow' : d.toISOString().split('T')[0];
+    const displayTime = th !== undefined
+      ? `${th % 12 || 12}:${String(tmin).padStart(2, '0')} ${th >= 12 ? 'PM' : 'AM'}`
+      : formData.startTime;
+
     setEvents(prev => [{
       id: data.id,
       title: formData.title.trim(),
-      time: formData.startTime,
-      dateKey: formData.when === 'today' ? 'today' : 'tomorrow',
-      dateLabel: buildDateLabel(offset),
+      time: displayTime,
+      dateKey,
+      dateLabel: buildDateLabel(dayOffset),
       hostId: userId,
       place: formData.place.trim() || '',
-      duration: formData.duration || '',
+      duration: formData.duration.trim() || '',
       durationNote: '',
       visibility: formData.visibility,
       photo: 'green',
