@@ -31,7 +31,7 @@ function supabaseEventToLocal(row) {
     durationNote: '',
     visibility: row.visibility,
     photo: row.photo || 'green',
-    goingIds: [],
+    goingIds: row.rsvps ? row.rsvps.map(r => r.user_id) : [],
     description: row.description || '',
     comments: [],
   };
@@ -67,7 +67,7 @@ export function AppProvider({ children }) {
       const to = new Date(from); to.setDate(from.getDate() + 7);
       const { data: rows } = await supabase
         .from('events')
-        .select('*, host:host_id(id, name, handle, ch, tone)')
+        .select('*, host:host_id(id, name, handle, ch, tone), rsvps(user_id)')
         .gte('starts_at', from.toISOString())
         .lt('starts_at', to.toISOString())
         .order('starts_at');
