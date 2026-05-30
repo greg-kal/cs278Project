@@ -74,6 +74,41 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ─── app shell ─── */
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: #e8e4de; /* slightly darker than paper for desktop framing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+}
+
+/* hide scrollbars globally in the app */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+
+/* ─── animations ─── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ─── focus rings (accessibility) ─── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── touch tap highlight ─── */
+* { -webkit-tap-highlight-color: transparent; }
+
 /* respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

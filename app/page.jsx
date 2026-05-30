@@ -1,7 +1,7 @@
-export default function Home() {
-  return (
-    <main>
-      {/* placeholder — replace with actual screens */}
-    </main>
-  );
+export const dynamic = 'force-dynamic';
+
+import TimelineApp from './components/TimelineApp';
+
+export default function Page() {
+  return <TimelineApp />;
 }
