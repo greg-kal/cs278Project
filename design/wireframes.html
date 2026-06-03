@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Timeline Events App — Wireframes</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Architects+Daughter&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin:0; padding:0; background:#f0eee9; }
+  body { font-family: 'Kalam', 'Architects Daughter', cursive; color:#1a1a1a; }
+  /* Sketchy wireframe primitives */
+  .wf { --ink:#1a1a1a; --muted:#8a8378; --paper:#fbfaf6; --accent:#c96442; --hl:#fde68a; }
+  .wf, .wf * { box-sizing:border-box; }
+  .wf-screen { background:var(--paper); border:1.5px solid var(--ink); border-radius:14px; overflow:hidden; position:relative; }
+  .wf-h { font-family:'Caveat', cursive; font-weight:600; }
+  .wf-mono { font-family:'JetBrains Mono', monospace; }
+  .wf-line { border-bottom:1.5px solid var(--ink); }
+  .wf-dashed { border:1.5px dashed var(--ink); border-radius:8px; }
+  .wf-box { border:1.5px solid var(--ink); border-radius:8px; background:#fff; }
+  .wf-soft { border:1.5px solid var(--ink); border-radius:10px; background:#fbfaf6; }
+  .wf-pill { border:1.5px solid var(--ink); border-radius:999px; padding:3px 10px; display:inline-flex; align-items:center; gap:5px; background:#fff; font-family:'Kalam',cursive; font-size:13px; }
+  .wf-btn { border:1.5px solid var(--ink); border-radius:999px; padding:6px 14px; background:#fff; font-family:'Caveat',cursive; font-weight:600; font-size:18px; }
+  .wf-btn-primary { background:var(--ink); color:#fff; }
+  .wf-hatch { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.06) 0 2px, transparent 2px 8px); }
+  .wf-zig { background-image: repeating-linear-gradient(135deg, rgba(0,0,0,.05) 0 3px, transparent 3px 9px); }
+  .wf-img { border:1.5px solid var(--ink); border-radius:6px; background:#fff; position:relative; overflow:hidden; }
+  .wf-img::before { content:""; position:absolute; inset:0; background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0 2px, transparent 2px 9px); }
+  .wf-img::after { content:""; position:absolute; inset:0; background:linear-gradient(135deg, transparent 49.5%, rgba(0,0,0,.4) 49.5% 50.5%, transparent 50.5%), linear-gradient(45deg, transparent 49.5%, rgba(0,0,0,.4) 49.5% 50.5%, transparent 50.5%); opacity:.5; }
+  .wf-avatar { width:28px; height:28px; border-radius:50%; border:1.5px solid var(--ink); background:#fff; display:inline-flex; align-items:center; justify-content:center; font-family:'Caveat',cursive; font-size:14px; font-weight:600; }
+  .wf-tab { font-family:'Kalam',cursive; font-size:13px; padding:4px 0; border-bottom:2px solid transparent; }
+  .wf-tab.active { border-bottom-color:var(--ink); font-weight:700; }
+  .wf-status { display:flex; justify-content:space-between; padding:6px 18px 0; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink); }
+  .wf-note { font-family:'Caveat',cursive; color:var(--accent); font-size:18px; line-height:1.1; }
+  .wf-arrow { font-family:'Caveat',cursive; color:var(--accent); }
+  .wf-star { color:var(--accent); }
+  .wf-ann { position:absolute; font-family:'Caveat', cursive; color:var(--accent); font-size:18px; font-weight:500; line-height:1.05; pointer-events:none; }
+  .wf-ann svg { display:block; overflow:visible; }
+  .wf-stroke-dim { stroke:var(--ink); stroke-width:1.5; fill:none; opacity:.85; }
+  .wf-bottomnav { position:absolute; left:0; right:0; bottom:0; height:64px; border-top:1.5px solid var(--ink); display:flex; align-items:center; justify-content:space-around; background:#fbfaf6; padding-bottom:6px; }
+  .wf-navicon { width:24px; height:24px; border:1.5px solid var(--ink); border-radius:5px; background:#fff; }
+  .wf-fab { position:absolute; right:18px; bottom:78px; width:56px; height:56px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Caveat',cursive; font-size:36px; font-weight:600; line-height:1; border:1.5px solid var(--ink); box-shadow:3px 3px 0 var(--ink); }
+  .wf-divider { height:1.5px; background:var(--ink); }
+  .wf-faint { color:var(--muted); }
+  .wf-tag { font-family:'JetBrains Mono', monospace; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+
+  /* dotted timeline rail */
+  .rail { position:absolute; top:0; bottom:0; width:0; border-left:2px dotted var(--ink); }
+
+  /* hand-drawn squiggle for headers */
+  .squiggle { display:block; height:8px; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="wireframes.jsx"></script>
+</body>
+</html>

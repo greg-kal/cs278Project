@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Timeline — Hi-Fi Screens (Print)</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  @page { size: letter portrait; margin: 0.5in; }
+  html, body { margin:0; padding:0; background:#f0eee9; }
+  body { font-family: 'Inter', system-ui, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .print-shell { padding: 24px; }
+  .print-section-header { padding: 18px 8px 6px; }
+  .print-section-header .eyebrow { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8a8278; }
+  .print-section-header h2 { font-family: 'Caveat', cursive; font-size: 32px; font-weight: 700; margin: 4px 0 2px; color: #1a1814; letter-spacing: -.01em; }
+  .print-section-header p { margin: 0; color: #6e665c; font-size: 13px; }
+
+  .print-row { display: flex; flex-wrap: wrap; gap: 28px; padding: 12px 8px 24px; align-items: flex-start; }
+  .print-board { display: flex; flex-direction: column; align-items: center; gap: 10px; break-inside: avoid; page-break-inside: avoid; }
+  .print-board .label { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #6e665c; }
+  .phone-wrap { box-shadow: 0 1px 0 rgba(20,16,12,.04), 0 16px 40px -20px rgba(20,16,12,.25); border-radius: 44px; }
+
+  /* Page breaks: each section starts on a new page */
+  .pb { break-before: page; page-break-before: always; }
+
+  /* Hide cover overflow nicely */
+  @media print {
+    body { background: #ffffff; }
+    .print-shell { padding: 0; }
+  }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Stub out DesignCanvas so we can reuse timeline-hifi.jsx without the pan/zoom shell. -->
+<script type="text/babel">
+  // Provide minimal stand-ins so timeline-hifi.jsx loads but its <App/> is replaced.
+  window.DesignCanvas = ({ children }) => <>{children}</>;
+  window.DCSection = ({ children, title, subtitle }) => (
+    <div className="print-section">
+      <div className="print-section-header">
+        <div className="eyebrow">section</div>
+        <h2>{title}</h2>
+        {subtitle ? <p>{subtitle}</p> : null}
+      </div>
+      <div className="print-row">{children}</div>
+    </div>
+  );
+  window.DCArtboard = ({ children, label, width, height }) => (
+    <div className="print-board" style={{ width }}>
+      <div className="phone-wrap" style={{ width, height }}>{children}</div>
+      <div className="label">{label}</div>
+    </div>
+  );
+  // Prevent the original App from auto-rendering — we'll do it ourselves below.
+  window.__SKIP_AUTO_RENDER__ = true;
+</script>
+
+<script type="text/babel" src="tl-base.jsx"></script>
+<script type="text/babel" src="timeline-hifi.jsx"></script>
+
+<script type="text/babel">
+  // The original file already called createRoot(...).render(<App/>). Since we
+  // stubbed DesignCanvas/DCSection/DCArtboard, that render produced our print
+  // layout. Now wait for fonts + a beat, then trigger print.
+  (async () => {
+    try { if (document.fonts && document.fonts.ready) { await document.fonts.ready; } } catch(e) {}
+    await new Promise(r => setTimeout(r, 600));
+    window.print();
+  })();
+</script>
+</body>
+</html>

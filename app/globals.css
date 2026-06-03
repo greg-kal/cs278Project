@@ -1,0 +1,118 @@
+/* ─────────── timeline.tokens.css ─────────── */
+/* Source of truth for all design values.      */
+/* See design/style-guide.html for full spec.  */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* surfaces */
+  --paper:        #FAF7F2;
+  --card:         #FFFFFF;
+  --soft:         #F3EFE7;
+
+  /* ink */
+  --ink:          #1A1814;
+  --ink-2:        #2C2823;
+  --muted:        #8A8278;
+
+  /* hairlines */
+  --hair:         rgba(26,24,20,0.10);
+  --hair-2:       rgba(26,24,20,0.16);
+
+  /* accent (terracotta) */
+  --accent:       oklch(64% 0.14 38);
+  --accent-soft:  oklch(94% 0.04 50);
+  --accent-ink:   oklch(38% 0.10 38);
+
+  /* semantic */
+  --good:         oklch(58% 0.13 150);
+  --warn:         oklch(72% 0.16 75);
+
+  /* avatar tones — deterministic from userId: tones[hash(userId) % 5] */
+  --t-b1-bg: oklch(86% 0.06 50);   --t-b1-fg: oklch(35% 0.08 50);
+  --t-b2-bg: oklch(86% 0.05 145);  --t-b2-fg: oklch(33% 0.08 145);
+  --t-b3-bg: oklch(86% 0.05 230);  --t-b3-fg: oklch(33% 0.08 230);
+  --t-b4-bg: oklch(88% 0.05 320);  --t-b4-fg: oklch(35% 0.08 320);
+  --t-b5-bg: oklch(89% 0.04 90);   --t-b5-fg: oklch(33% 0.08 90);
+
+  /* spacing (4px base) */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px;
+  --s-4: 16px; --s-5: 20px; --s-6: 24px;
+  --s-8: 32px; --s-10: 40px;
+
+  /* radius */
+  --r-sm: 6px;  --r-md: 10px; --r-lg: 14px;
+  --r-xl: 18px; --r-sheet: 28px; --r-pill: 999px;
+
+  /* elevation */
+  --e-1: 0 1px 0 rgba(20,16,12,.02), 0 8px 24px -16px rgba(20,16,12,.18);
+  --e-2: 0 2px 0 rgba(20,16,12,.04), 0 14px 40px -18px rgba(20,16,12,.28);
+  --e-sheet: 0 -20px 60px -20px rgba(20,16,12,.35);
+
+  /* motion */
+  --m-fast:  120ms ease-out;
+  --m-base:  200ms cubic-bezier(.2,.7,.3,1);
+  --m-sheet: 320ms cubic-bezier(.2,.8,.2,1);
+  --m-page:  280ms cubic-bezier(.4,0,.2,1);
+
+  /* typography */
+  --font-ui:      'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Caveat', cursive;
+  --font-mono:    'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+
+/* ─── base reset ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── app shell ─── */
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: #e8e4de; /* slightly darker than paper for desktop framing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+}
+
+/* hide scrollbars globally in the app */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+
+/* ─── animations ─── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ─── focus rings (accessibility) ─── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── touch tap highlight ─── */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

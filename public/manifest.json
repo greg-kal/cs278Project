@@ -1,0 +1,18 @@
+{
+  "name": "Timeline",
+  "short_name": "Timeline",
+  "description": "See what's happening with the people around you.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F2",
+  "theme_color": "#c96442",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

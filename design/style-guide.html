@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Timeline — Style Guide for Engineers</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* ─── Color tokens (warm system, the canonical theme) ─── */
+    --paper:       #faf7f2;
+    --card:        #ffffff;
+    --soft:        #f3efe7;
+    --ink:         #1a1814;
+    --ink-2:       #2c2823;
+    --muted:       #8a8278;
+    --hair:        rgba(26,24,20,0.10);
+    --hair-2:      rgba(26,24,20,0.16);
+
+    --accent:       oklch(64% 0.14 38);   /* terracotta */
+    --accent-soft:  oklch(94% 0.04 50);
+    --accent-ink:   oklch(38% 0.10 38);
+
+    --good:         oklch(58% 0.13 150);
+    --warn:         oklch(72% 0.16 75);
+
+    /* Avatar tones */
+    --t-b1-bg: oklch(86% 0.06 50);   --t-b1-fg: oklch(35% 0.08 50);
+    --t-b2-bg: oklch(86% 0.05 145);  --t-b2-fg: oklch(33% 0.08 145);
+    --t-b3-bg: oklch(86% 0.05 230);  --t-b3-fg: oklch(33% 0.08 230);
+    --t-b4-bg: oklch(88% 0.05 320);  --t-b4-fg: oklch(35% 0.08 320);
+    --t-b5-bg: oklch(89% 0.04 90);   --t-b5-fg: oklch(33% 0.08 90);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+
+  .display { font-family: 'Caveat', cursive; letter-spacing: -0.01em; }
+  .mono    { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 40px 120px; }
+
+  /* Header */
+  .hd { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--hair); }
+  .hd .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .hd h1 { font-family: 'Caveat', cursive; font-size: 64px; line-height: .95; margin: 4px 0 0; font-weight: 700; }
+  .hd .lede { color: var(--ink-2); font-size: 16px; line-height: 1.55; max-width: 460px; margin-top: 8px; }
+  .hd .ver { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .08em; color: var(--muted); text-align: right; }
+
+  /* Section */
+  section { padding-top: 56px; }
+  .sec-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h2 { font-family: 'Caveat', cursive; font-size: 40px; font-weight: 700; margin: 4px 0 6px; line-height: 1; letter-spacing: -0.01em; }
+  .sec-sub { color: var(--muted); font-size: 14px; margin: 0 0 24px; max-width: 640px; line-height: 1.5; }
+  h3 { font-size: 14px; font-weight: 600; margin: 28px 0 10px; letter-spacing: 0; }
+
+  p { line-height: 1.6; color: var(--ink-2); font-size: 14px; }
+
+  /* TOC */
+  .toc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 18px; margin-top: 28px; }
+  .toc a { color: var(--ink); text-decoration: none; font-size: 13px; padding: 8px 0; border-top: 1px solid var(--hair); display: flex; justify-content: space-between; }
+  .toc a:hover { color: var(--accent-ink); }
+  .toc a .num { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-size: 11px; }
+
+  /* Cards / generic primitives */
+  .card { background: var(--card); border: 1px solid var(--hair); border-radius: 14px; padding: 18px; box-shadow: 0 1px 0 rgba(20,16,12,.02), 0 8px 24px -16px rgba(20,16,12,.18); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+  /* Color swatches */
+  .sw { display: flex; flex-direction: column; gap: 6px; }
+  .sw .chip { height: 88px; border-radius: 12px; border: 1px solid var(--hair); position: relative; overflow: hidden; }
+  .sw .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .sw .name { font-size: 13px; font-weight: 600; }
+  .sw .val  { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .sw .desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  /* Type spec rows */
+  .type-row { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; padding: 18px 0; border-top: 1px solid var(--hair); }
+  .type-row:first-of-type { border-top: 0; }
+  .type-row .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.6; color: var(--muted); }
+  .type-row .meta b { color: var(--ink); font-weight: 600; display: block; font-family: 'Inter', sans-serif; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; }
+  .type-row .meta .k { color: var(--muted); }
+  .type-row .meta .v { color: var(--ink-2); }
+
+  /* Spacing visual */
+  .sp { display: grid; grid-template-columns: 60px 1fr 100px; align-items: center; gap: 14px; padding: 8px 0; }
+  .sp .name { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .sp .bar { background: var(--ink); height: 12px; border-radius: 2px; }
+  .sp .px { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-align: right; }
+
+  /* Component callout boxes */
+  .demo { background: var(--paper); border: 1px solid var(--hair); border-radius: 14px; padding: 24px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; min-height: 120px; }
+  .demo.tall { min-height: 200px; align-items: flex-start; padding-top: 30px; }
+  .props { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); line-height: 1.7; background: var(--soft); padding: 12px 14px; border-radius: 10px; margin-top: 12px; white-space: pre; overflow: auto; }
+
+  /* Buttons used in samples */
+  .btn { height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--hair-2); background: var(--card); font-weight: 600; font-size: 15px; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+  .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.accent  { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.ghost   { background: transparent; }
+  .btn.sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--hair-2); background: var(--card); font-size: 12px; color: var(--ink-2); }
+  .pill.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .pill.accent { background: var(--accent-soft); color: var(--accent-ink); border-color: color-mix(in oklab, var(--accent) 25%, transparent); }
+
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+  .input { background: var(--card); border: 1px solid var(--hair-2); border-radius: 12px; padding: 12px 14px; font-size: 15px; color: var(--ink); width: 260px; font-family: inherit; }
+
+  .seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--soft); border: 1px solid var(--hair); }
+  .seg button { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); background: transparent; border: 0; cursor: pointer; }
+  .seg button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+
+  .av { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--soft); color: var(--ink-2); font-weight: 600; border: 1px solid var(--hair); width: 36px; height: 36px; font-size: 14px; }
+  .av.b1 { background: var(--t-b1-bg); color: var(--t-b1-fg); }
+  .av.b2 { background: var(--t-b2-bg); color: var(--t-b2-fg); }
+  .av.b3 { background: var(--t-b3-bg); color: var(--t-b3-fg); }
+  .av.b4 { background: var(--t-b4-bg); color: var(--t-b4-fg); }
+  .av.b5 { background: var(--t-b5-bg); color: var(--t-b5-fg); }
+  .stack { display: inline-flex; }
+  .stack > * + * { margin-left: -8px; }
+
+  /* Code */
+  pre, code { font-family: 'JetBrains Mono', monospace; }
+  pre { background: var(--ink); color: #e6e2db; padding: 18px 20px; border-radius: 12px; font-size: 12px; line-height: 1.65; overflow: auto; }
+  pre .c { color: #8d847a; } /* comment */
+  pre .k { color: #f0a87a; } /* key */
+  pre .s { color: #cfe6b8; } /* string */
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+  td.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-2); }
+
+  ul.tight { padding-left: 18px; margin: 6px 0 0; }
+  ul.tight li { margin-bottom: 4px; line-height: 1.55; font-size: 14px; color: var(--ink-2); }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 12px 0; font-size: 13px; line-height: 1.55; color: var(--accent-ink); }
+  .callout b { color: var(--accent-ink); }
+
+  .icon-cell { display:flex; flex-direction:column; align-items:center; gap:6px; padding: 14px 6px; border: 1px solid var(--hair); border-radius: 10px; background: var(--card); }
+  .icon-cell svg { width: 22px; height: 22px; stroke: var(--ink); fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-cell .nm { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+
+  .card-sample { background: var(--card); border: 1px solid var(--hair); border-radius: 18px; padding: 14px; box-shadow: 0 1px 0 rgba(20,16,12,.02), 0 8px 24px -16px rgba(20,16,12,.18); width: 320px; }
+  .card-sample .title { font-size: 18px; font-weight: 600; }
+  .card-sample .sub   { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .card-sample .meta  { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+
+  .photo { border-radius: 14px; overflow: hidden; background:
+    repeating-linear-gradient(135deg, oklch(82% 0.04 60) 0 8px, oklch(78% 0.05 60) 8px 16px);
+    width: 64px; height: 64px; flex-shrink: 0; }
+  .photo.green { background: repeating-linear-gradient(135deg, oklch(82% 0.05 150) 0 8px, oklch(78% 0.06 150) 8px 16px); }
+  .photo.blue  { background: repeating-linear-gradient(135deg, oklch(82% 0.05 230) 0 8px, oklch(78% 0.06 230) 8px 16px); }
+  .photo.warm  { background: repeating-linear-gradient(135deg, oklch(83% 0.06 40) 0 8px, oklch(78% 0.08 40) 8px 16px); }
+
+  .anatomy { position: relative; padding: 30px; background: var(--paper); border: 1px solid var(--hair); border-radius: 14px; }
+  .anatomy .label { position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent-ink); white-space: nowrap; }
+  .anatomy .leader { position: absolute; height: 1px; background: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ───────────────────── Header ───────────────────── -->
+<div class="hd">
+  <div>
+    <div class="eyebrow">Timeline · Engineering Style Guide</div>
+    <h1 class="display">Build sheet.</h1>
+    <p class="lede">A single source of truth for tokens, components, and patterns used across the Timeline app. Hand this to anyone implementing the design — they should not need to look at the Figma to ship a screen.</p>
+  </div>
+  <div class="ver">
+    v1.0 · MAY 2026<br/>
+    target: iOS · 390×844<br/>
+    framework-agnostic
+  </div>
+</div>
+
+<!-- ───────────────────── TOC ───────────────────── -->
+<section>
+  <div class="sec-eyebrow">contents</div>
+  <h2 class="display">What's in here</h2>
+  <div class="toc">
+    <a href="#principles"><span>Principles</span><span class="num">01</span></a>
+    <a href="#color"><span>Color</span><span class="num">02</span></a>
+    <a href="#type"><span>Typography</span><span class="num">03</span></a>
+    <a href="#space"><span>Spacing &amp; radius</span><span class="num">04</span></a>
+    <a href="#elevation"><span>Elevation &amp; hairlines</span><span class="num">05</span></a>
+    <a href="#icons"><span>Iconography</span><span class="num">06</span></a>
+    <a href="#components"><span>Components</span><span class="num">07</span></a>
+    <a href="#patterns"><span>Patterns</span><span class="num">08</span></a>
+    <a href="#motion"><span>Motion</span><span class="num">09</span></a>
+    <a href="#a11y"><span>Accessibility</span><span class="num">10</span></a>
+    <a href="#assets"><span>Asset checklist</span><span class="num">11</span></a>
+    <a href="#tokens"><span>Token export</span><span class="num">12</span></a>
+  </div>
+</section>
+
+<!-- ───────────────────── 01 Principles ───────────────────── -->
+<section id="principles">
+  <div class="sec-eyebrow">01 · principles</div>
+  <h2 class="display">Voice &amp; feel</h2>
+  <p class="sec-sub">The product feels like a friendly notebook, not a feed app. Warm paper background, near-black ink, one terracotta accent. The handwritten Caveat display is the personality — use it sparingly so it stays special.</p>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="tag">do</div>
+      <h3 style="margin-top:6px">Lean on whitespace</h3>
+      <p>Generous gutters (16–22px) and breathing room between cards. Density is earned, not free.</p>
+    </div>
+    <div class="card">
+      <div class="tag">do</div>
+      <h3 style="margin-top:6px">One accent color</h3>
+      <p>Terracotta only for: primary CTAs (sometimes), warning/conflict copy, "your turn" eyebrow text. Never decorative.</p>
+    </div>
+    <div class="card">
+      <div class="tag">don't</div>
+      <h3 style="margin-top:6px">Stack display type</h3>
+      <p>Caveat appears at most once per screen — usually the H1. Body text is always Inter.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────── 02 Color ───────────────────── -->
+<section id="color">
+  <div class="sec-eyebrow">02 · color</div>
+  <h2 class="display">Color tokens</h2>
+  <p class="sec-sub">All colors are CSS custom properties. Never hardcode hex in components. Avatar tones rotate b1–b5 deterministically by user id (<code>b{(hash % 5) + 1}</code>).</p>
+
+  <h3>Surfaces &amp; ink</h3>
+  <div class="grid-5">
+    <div class="sw">
+      <div class="chip" style="background: var(--paper)"></div>
+      <div class="meta"><span class="name">paper</span><span class="val">#FAF7F2</span></div>
+      <div class="desc">App background. Warm off-white.</div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background: var(--card)"></div>
+      <div class="meta"><span class="name">card</span><span class="val">#FFFFFF</span></div>
+      <div class="desc">Card / sheet surface.</div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background: var(--soft)"></div>
+      <div class="meta"><span class="name">soft</span><span class="val">#F3EFE7</span></div>
+      <div class="desc">Inactive segments, avatar fallback.</div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background: var(--ink)"></div>
+      <div class="meta"><span class="name" style="color:#fff;mix-blend-mode:difference">ink</span><span class="val" style="color:#fff;mix-blend-mode:difference">#1A1814</span></div>
+      <div class="desc">Primary text + primary CTA.</div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background: var(--muted)"></div>
+      <div class="meta"><span class="name">muted</span><span class="val">#8A8278</span></div>
+      <div class="desc">Secondary text, tags, eyebrows.</div>
+    </div>
+  </div>
+
+  <h3>Accent &amp; semantic</h3>
+  <div class="grid-4">
+    <div class="sw">
+      <div class="chip" style="background: var(--accent)"></div>
+      <div class="meta"><span class="name">accent</span><span class="val">oklch(64% .14 38)</span></div>
+      <div class="desc">Terracotta. Conflict copy, accent CTAs.</div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background: var(--accent-soft); border-color: color-mix(in oklab, var(--accent) 25%, transparent);"></div>
+      <div class="meta"><span class="name">accent-soft</span><span class="val">oklch(94% .04 50)</span></div>
+      <div class="desc">Backgrounds for accent moments.</div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background: var(--accent-ink)"></div>
+      <div class="meta"><span class="name" style="color:#fff;mix-blend-mode:difference">accent-ink</span><span class="val" style="color:#fff;mix-blend-mode:difference">oklch(38% .10 38)</span></div>
+      <div class="desc">Text on accent-soft.</div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background: var(--good)"></div>
+      <div class="meta"><span class="name" style="color:#fff;mix-blend-mode:difference">good</span><span class="val" style="color:#fff;mix-blend-mode:difference">oklch(58% .13 150)</span></div>
+      <div class="desc">Reserved. Success states only.</div>
+    </div>
+  </div>
+
+  <h3>Avatar tones (b1–b5)</h3>
+  <div class="grid-5">
+    <div class="sw"><div class="chip" style="background: var(--t-b1-bg)"></div><div class="meta"><span class="name">b1</span><span class="val">warm</span></div></div>
+    <div class="sw"><div class="chip" style="background: var(--t-b2-bg)"></div><div class="meta"><span class="name">b2</span><span class="val">green</span></div></div>
+    <div class="sw"><div class="chip" style="background: var(--t-b3-bg)"></div><div class="meta"><span class="name">b3</span><span class="val">blue</span></div></div>
+    <div class="sw"><div class="chip" style="background: var(--t-b4-bg)"></div><div class="meta"><span class="name">b4</span><span class="val">pink</span></div></div>
+    <div class="sw"><div class="chip" style="background: var(--t-b5-bg)"></div><div class="meta"><span class="name">b5</span><span class="val">yellow</span></div></div>
+  </div>
+
+  <h3>Hairlines</h3>
+  <div class="row">
+    <div class="card" style="flex:1; padding: 10px 14px">
+      <span class="mono" style="font-size:12px">--hair</span> · 1px <span style="color:var(--muted)">rgba(26,24,20,.10)</span> · dividers, default borders
+    </div>
+    <div class="card" style="flex:1; padding: 10px 14px">
+      <span class="mono" style="font-size:12px">--hair-2</span> · 1px <span style="color:var(--muted)">rgba(26,24,20,.16)</span> · pills, inputs, button outlines
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────── 03 Type ───────────────────── -->
+<section id="type">
+  <div class="sec-eyebrow">03 · typography</div>
+  <h2 class="display">Type system</h2>
+  <p class="sec-sub">Three families. Inter for everything UI, Caveat for the personality moments, JetBrains Mono for time / dates / tags.</p>
+
+  <div class="type-row">
+    <div class="meta">
+      <b>Display / H1</b>
+      <span class="k">family</span> <span class="v">Caveat 700</span><br/>
+      <span class="k">size</span>   <span class="v">30 / 34px</span><br/>
+      <span class="k">leading</span><span class="v">.95–1.05</span><br/>
+      <span class="k">tracking</span><span class="v">-0.01em</span><br/>
+      <span class="k">use</span>    <span class="v">screen titles, hero moments</span>
+    </div>
+    <div class="display" style="font-size:34px; font-weight:700; line-height:.95">Today.</div>
+  </div>
+
+  <div class="type-row">
+    <div class="meta">
+      <b>Title / H2</b>
+      <span class="k">family</span> <span class="v">Inter 700</span><br/>
+      <span class="k">size</span>   <span class="v">22px</span><br/>
+      <span class="k">leading</span><span class="v">1.1</span><br/>
+      <span class="k">tracking</span><span class="v">-0.02em</span><br/>
+      <span class="k">use</span>    <span class="v">profile names, modal titles</span>
+    </div>
+    <div style="font-family:Inter; font-size:22px; font-weight:700; letter-spacing:-0.02em">Greg Watanabe</div>
+  </div>
+
+  <div class="type-row">
+    <div class="meta">
+      <b>Card title</b>
+      <span class="k">family</span> <span class="v">Inter 600</span><br/>
+      <span class="k">size</span>   <span class="v">17–18px</span><br/>
+      <span class="k">leading</span><span class="v">1.2</span><br/>
+      <span class="k">use</span>    <span class="v">event titles in feed cards</span>
+    </div>
+    <div style="font-family:Inter; font-size:18px; font-weight:600">Dinner at Arrillaga</div>
+  </div>
+
+  <div class="type-row">
+    <div class="meta">
+      <b>Body</b>
+      <span class="k">family</span> <span class="v">Inter 400</span><br/>
+      <span class="k">size</span>   <span class="v">15px</span><br/>
+      <span class="k">leading</span><span class="v">1.4–1.5</span><br/>
+      <span class="k">color</span>  <span class="v">--ink-2</span>
+    </div>
+    <div style="font-family:Inter; font-size:15px; color:var(--ink-2); line-height:1.45">Open invite. Roll thru — I'll grab a long table by the windows.</div>
+  </div>
+
+  <div class="type-row">
+    <div class="meta">
+      <b>Sub / meta</b>
+      <span class="k">family</span> <span class="v">Inter 400</span><br/>
+      <span class="k">size</span>   <span class="v">13px</span><br/>
+      <span class="k">color</span>  <span class="v">--muted</span><br/>
+      <span class="k">use</span>    <span class="v">host name, place, comment timestamps</span>
+    </div>
+    <div style="font-family:Inter; font-size:13px; color:var(--muted)">Greg · Open invite</div>
+  </div>
+
+  <div class="type-row">
+    <div class="meta">
+      <b>Mono / time</b>
+      <span class="k">family</span> <span class="v">JetBrains Mono 500–600</span><br/>
+      <span class="k">size</span>   <span class="v">11–13px</span><br/>
+      <span class="k">numeric</span><span class="v">tabular-nums</span><br/>
+      <span class="k">use</span>    <span class="v">all clock times, durations</span>
+    </div>
+    <div class="mono" style="font-size:13px; font-weight:600">6:30 PM · 1h 30m</div>
+  </div>
+
+  <div class="type-row">
+    <div class="meta">
+      <b>Tag / eyebrow</b>
+      <span class="k">family</span> <span class="v">JetBrains Mono 400</span><br/>
+      <span class="k">size</span>   <span class="v">10–11px</span><br/>
+      <span class="k">tracking</span><span class="v">.08em</span><br/>
+      <span class="k">case</span>   <span class="v">UPPERCASE</span><br/>
+      <span class="k">color</span>  <span class="v">--muted</span>
+    </div>
+    <div class="tag">8 GOING · WED APR 30</div>
+  </div>
+
+  <div class="callout"><b>Rule:</b> Display type appears at most once per screen. Two Caveat headings on one view is a bug.</div>
+</section>
+
+<!-- ───────────────────── 04 Spacing ───────────────────── -->
+<section id="space">
+  <div class="sec-eyebrow">04 · spacing &amp; radius</div>
+  <h2 class="display">Spacing &amp; radius</h2>
+  <p class="sec-sub">Spacing is on a 4px base. Use the named scale; never type "13px" or "27px" into a margin.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Spacing scale</h3>
+      <div class="card">
+        <div class="sp"><span class="name">--s-1</span><div class="bar" style="width:4px"></div><span class="px">4px</span></div>
+        <div class="sp"><span class="name">--s-2</span><div class="bar" style="width:8px"></div><span class="px">8px</span></div>
+        <div class="sp"><span class="name">--s-3</span><div class="bar" style="width:12px"></div><span class="px">12px</span></div>
+        <div class="sp"><span class="name">--s-4</span><div class="bar" style="width:16px"></div><span class="px">16px · default gutter</span></div>
+        <div class="sp"><span class="name">--s-5</span><div class="bar" style="width:20px"></div><span class="px">20px</span></div>
+        <div class="sp"><span class="name">--s-6</span><div class="bar" style="width:24px"></div><span class="px">24px · section gap</span></div>
+        <div class="sp"><span class="name">--s-8</span><div class="bar" style="width:32px"></div><span class="px">32px</span></div>
+        <div class="sp"><span class="name">--s-10</span><div class="bar" style="width:40px"></div><span class="px">40px · screen-edge</span></div>
+      </div>
+    </div>
+    <div>
+      <h3>Border radius</h3>
+      <div class="card">
+        <div class="row" style="gap:18px">
+          <div style="text-align:center"><div style="width:64px;height:64px;background:var(--soft);border:1px solid var(--hair); border-radius:6px"></div><div class="tag" style="margin-top:6px">--r-sm · 6px</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;background:var(--soft);border:1px solid var(--hair); border-radius:10px"></div><div class="tag" style="margin-top:6px">--r-md · 10px</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;background:var(--soft);border:1px solid var(--hair); border-radius:14px"></div><div class="tag" style="margin-top:6px">--r-lg · 14px · cards</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;background:var(--soft);border:1px solid var(--hair); border-radius:18px"></div><div class="tag" style="margin-top:6px">--r-xl · 18px · feed card</div></div>
+        </div>
+        <div class="row" style="gap:18px; margin-top:18px">
+          <div style="text-align:center"><div style="width:64px;height:64px;background:var(--soft);border:1px solid var(--hair); border-top-left-radius:28px;border-top-right-radius:28px"></div><div class="tag" style="margin-top:6px">--r-sheet · 28px (top)</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;background:var(--soft);border:1px solid var(--hair); border-radius:999px"></div><div class="tag" style="margin-top:6px">--r-pill · pill / button</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────── 05 Elevation ───────────────────── -->
+<section id="elevation">
+  <div class="sec-eyebrow">05 · elevation</div>
+  <h2 class="display">Hairlines &amp; shadow</h2>
+  <p class="sec-sub">Cards use a 1px hairline border <em>and</em> a soft long shadow. Don't pick one — both. The combo gives the "paper sitting on paper" feel.</p>
+
+  <div class="grid-3">
+    <div>
+      <div class="demo" style="background:var(--paper)">
+        <div class="card-sample">
+          <div class="title">Card · resting</div>
+          <div class="sub">--hair border + e-1 shadow</div>
+        </div>
+      </div>
+      <div class="props">box-shadow:
+  0 1px 0 rgba(20,16,12,.02),
+  0 8px 24px -16px rgba(20,16,12,.18);
+border: 1px solid var(--hair);</div>
+    </div>
+    <div>
+      <div class="demo" style="background:var(--paper)">
+        <div class="card-sample" style="box-shadow: 0 2px 0 rgba(20,16,12,.04), 0 14px 40px -18px rgba(20,16,12,.28); transform:translateY(-2px)">
+          <div class="title">Card · hover / lifted</div>
+          <div class="sub">used for tappable suggestions</div>
+        </div>
+      </div>
+      <div class="props">box-shadow:
+  0 2px 0 rgba(20,16,12,.04),
+  0 14px 40px -18px rgba(20,16,12,.28);
+transform: translateY(-2px);</div>
+    </div>
+    <div>
+      <div class="demo" style="background:var(--paper)">
+        <div class="card-sample" style="box-shadow: 0 -20px 60px -20px rgba(20,16,12,.35); border-top-left-radius:28px; border-top-right-radius:28px;">
+          <div class="title">Bottom sheet</div>
+          <div class="sub">single upward shadow</div>
+        </div>
+      </div>
+      <div class="props">box-shadow: 0 -20px 60px -20px rgba(20,16,12,.35);
+border-radius: 28px 28px 0 0;</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────── 06 Icons ───────────────────── -->
+<section id="icons">
+  <div class="sec-eyebrow">06 · iconography</div>
+  <h2 class="display">Iconography</h2>
+  <p class="sec-sub">Custom 24×24 line icons, 1.75px stroke, round caps + joins, no fills. Default color inherits from current text color. Star is the only icon allowed in a filled state (favorited).</p>
+
+  <div class="grid-5">
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.5"/><rect x="3" y="11" width="18" height="9" rx="1.5"/></svg><div class="nm">feed</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5"/><circle cx="17" cy="8" r="2.5"/><path d="M16 13.5c2.5 0 4.5 1.5 5.5 4"/></svg><div class="nm">people</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 1112 0c0 5 2 7 2 7H4s2-2 2-7z"/><path d="M10 20a2 2 0 004 0"/></svg><div class="nm">bell</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><div class="nm">me</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8-4.3-4.1 5.9-.9L12 3.5z"/></svg><div class="nm">star</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><div class="nm">plus</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><div class="nm">back</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 5h18M6 12h12M10 19h4"/></svg><div class="nm">filter</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><div class="nm">search</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 22s7-7 7-12a7 7 0 10-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg><div class="nm">pin</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div class="nm">clock</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 11-3.2-6.4L21 5l-1 3.4A7.96 7.96 0 0121 12z"/></svg><div class="nm">comment</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg><div class="nm">send</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L20 7"/></svg><div class="nm">check</div></div>
+    <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6l-12 12"/></svg><div class="nm">close</div></div>
+  </div>
+</section>
+
+<!-- ───────────────────── 07 Components ───────────────────── -->
+<section id="components">
+  <div class="sec-eyebrow">07 · components</div>
+  <h2 class="display">Component library</h2>
+  <p class="sec-sub">Build these once and reuse everywhere. Hit areas are 44px minimum on touch surfaces. Names below match the JSX in <span class="mono">tl-base.jsx</span> and <span class="mono">timeline-hifi.jsx</span>.</p>
+
+  <h3>Buttons</h3>
+  <div class="demo">
+    <button class="btn primary">I'm in</button>
+    <button class="btn">Maybe</button>
+    <button class="btn ghost">Skip</button>
+    <button class="btn accent">Yes, post it</button>
+    <button class="btn primary sm">Join</button>
+    <button class="btn sm">Edit</button>
+  </div>
+  <div class="props">.btn         height: 44px  padding: 0 18px  radius: 999px  font: 600 15px Inter
+.btn.sm      height: 32px  padding: 0 12px  font-size: 13px
+.btn.primary bg: --ink     color: --paper   border: --ink
+.btn.accent  bg: --accent  color: #fff      border: --accent
+.btn.ghost   bg: transparent  border: --hair-2 (or none in nav)</div>
+
+  <h3>Pills &amp; segmented control</h3>
+  <div class="demo">
+    <span class="pill">Today</span>
+    <span class="pill on">★ Favorites</span>
+    <span class="pill accent">happening soon</span>
+    <span class="pill on">✓ in</span>
+    <div class="seg">
+      <button class="on">★ Favorites</button>
+      <button>Everyone</button>
+    </div>
+  </div>
+  <div class="props">.pill        padding: 5px 10px   radius: 999px   font: 12px Inter
+.pill.on     bg: --ink    color: --paper
+.pill.accent bg: --accent-soft   color: --accent-ink
+.seg         padding: 3px         bg: --soft   border: --hair
+.seg button.on  bg: --card  shadow: 0 1px 2px rgba(0,0,0,.06)</div>
+
+  <h3>Avatars + stack</h3>
+  <div class="demo">
+    <span class="av b1">M</span>
+    <span class="av b2">J</span>
+    <span class="av b3">G</span>
+    <span class="av b4">A</span>
+    <span class="av b5">N</span>
+    <span class="stack">
+      <span class="av b1">M</span>
+      <span class="av b3">J</span>
+      <span class="av b4">A</span>
+      <span class="av b2" style="background:var(--soft);color:var(--ink-2)">+4</span>
+    </span>
+  </div>
+  <div class="props">Avatar { ch, size=32, tone=b1..b5 }
+  default size: 32px      sizes used: 22 (stack), 36 (cards), 56–72 (profile)
+  border: 1px solid --hair
+  font: 600 (size * 0.42)px Inter
+AvatarStack > * + *  margin-left: -8px</div>
+
+  <h3>Inputs</h3>
+  <div class="demo">
+    <input class="input" placeholder="Search friends" />
+    <input class="input" value="Dinner at Arrillaga" />
+  </div>
+  <div class="props">.input  background: --card   border: 1px solid --hair-2   radius: 12px
+        padding: 12px 14px   font: 15px Inter
+        placeholder color: --muted</div>
+
+  <h3>Event card · anatomy</h3>
+  <div class="demo tall">
+    <div class="card-sample">
+      <div style="display:flex; align-items:flex-start; gap:12px">
+        <div style="flex:1">
+          <div style="display:flex; align-items:center; gap:8px">
+            <span class="mono" style="font-size:11px; font-weight:600">6:30 PM</span>
+            <span class="pill accent" style="padding:2px 8px; font-size:10px; font-weight:600">happening soon</span>
+          </div>
+          <div class="title" style="margin-top:4px">Dinner at Arrillaga</div>
+          <div class="sub">Greg · Open invite</div>
+          <div class="meta">
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="stack">
+                <span class="av b4" style="width:22px;height:22px;font-size:11px">A</span>
+                <span class="av b2" style="width:22px;height:22px;font-size:11px">B</span>
+                <span class="av b1" style="width:22px;height:22px;font-size:11px">C</span>
+              </span>
+              <span style="font-size:12px; color:var(--muted)">8 going</span>
+            </div>
+            <button class="btn sm">Join</button>
+          </div>
+        </div>
+        <div class="photo warm"></div>
+      </div>
+    </div>
+  </div>
+  <div class="props">EventRow {
+  time, title, host, place,         // strings
+  going[],                          // [{ ch, tone }]
+  moreCount, joined,                // number, bool
+  photo,                            // 'warm' | 'green' | 'blue' | undefined
+  accent                            // optional pill text
+}
+container: --card  border: 1px solid --hair  radius: 18px  padding: 14px
+internal grid: 12px gap | photo: 64×64 fixed</div>
+
+  <h3>Tab bar (bottom nav)</h3>
+  <p>5 slots. Center slot is reserved (FAB sits above it). Active state = ink-colored icon + label; resting = muted. Background blurs the paper underneath.</p>
+  <div class="props">height: 84px   padding: 10px 18px 0
+background: color-mix(in oklab, --paper 92%, transparent)
+backdrop-filter: blur(20px)
+border-top: 1px solid --hair
+icon size: 24px   label: 10px Inter
+slots: [Feed, Friends, (FAB), Activity, You]</div>
+
+  <h3>FAB</h3>
+  <div class="props">position: fixed  right: 18px  bottom: 100px (above tabbar)
+size: 56×56  radius: 999px
+bg: --ink   color: --paper
+shadow: 0 10px 24px rgba(20,16,12,.22), 0 1px 0 rgba(255,255,255,.05) inset
+icon: plus 28px</div>
+
+  <h3>Bottom sheet</h3>
+  <div class="props">position: bottom-anchored
+border-top-left-radius: 28px
+border-top-right-radius: 28px
+bg: --paper
+shadow: 0 -20px 60px -20px rgba(20,16,12,.35)
+grabber: 36×5px   bg: --hair-2   margin: 6px auto 12px
+backdrop: rgba(20,16,12,.30)</div>
+</section>
+
+<!-- ───────────────────── 08 Patterns ───────────────────── -->
+<section id="patterns">
+  <div class="sec-eyebrow">08 · patterns</div>
+  <h2 class="display">Recurring patterns</h2>
+
+  <h3>Time always uses Mono</h3>
+  <p>Clock times, durations, and dates are <em>always</em> JetBrains Mono with tabular-nums. This keeps stacked rows aligned and signals "data". Format: <code>6:30 PM</code> (12h, space before AM/PM). Duration: <code>1h 30m</code>. Day chip: 3-letter code + day number.</p>
+
+  <h3>Joined state</h3>
+  <p>Once a user RSVPs, the "Join" button becomes a <span class="pill on">✓ in</span> pill in the same slot. Don't change the card layout.</p>
+
+  <h3>The 8px screen-edge gutter</h3>
+  <p>Phone screen edges always use 16–22px horizontal padding. Day strip and feed cards sit inside that gutter. The status bar uses 28px (matches iOS conventions).</p>
+
+  <h3>Conflict / overlap signaling</h3>
+  <ul class="tight">
+    <li>An overlapping card gets a small <span class="pill accent" style="padding:2px 8px; font-size:10px">overlaps soccer</span> pill anchored to the top-right (offset above the card edge).</li>
+    <li>Card border shifts to <code>color-mix(in oklab, var(--accent) 30%, transparent)</code>.</li>
+    <li>If user is already RSVPed, a footer banner appears with <strong>Join both</strong> + <strong>Swap</strong> actions.</li>
+  </ul>
+
+  <h3>Daily prompt — two flavors</h3>
+  <ul class="tight">
+    <li><strong>Inline</strong> (default): dark ink card pinned at top of feed under the day strip. 4-up grid of suggestions. Dismissible via × — does not return that day.</li>
+    <li><strong>Modal sheet</strong>: bottom sheet over a dimmed feed. Used only on first-open of the day if user hasn't posted by 11am.</li>
+  </ul>
+
+  <h3>Avatar tone assignment</h3>
+  <p>Tone is deterministic from user id: <code>tones[hash(userId) % 5]</code>. Same user = same tone everywhere in the app, forever.</p>
+
+  <h3>Empty &amp; loading</h3>
+  <ul class="tight">
+    <li>Skeleton: <code>--soft</code> blocks at card-radius, no shimmer animation needed for v1.</li>
+    <li>Empty illustration: a single emoji glyph in a 88px <code>--soft</code> circle — no custom art for v1.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────── 09 Motion ───────────────────── -->
+<section id="motion">
+  <div class="sec-eyebrow">09 · motion</div>
+  <h2 class="display">Motion</h2>
+  <p class="sec-sub">Subtle. The product is calm. Default easing is a soft out-cubic; never bouncy.</p>
+
+  <table>
+    <thead><tr><th>Token</th><th>Duration</th><th>Easing</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">--m-fast</td>   <td class="mono">120ms</td><td class="mono">ease-out</td>     <td>hover, tap-down feedback</td></tr>
+      <tr><td class="mono">--m-base</td>   <td class="mono">200ms</td><td class="mono">cubic(.2,.7,.3,1)</td><td>buttons, segment toggle, pill on/off</td></tr>
+      <tr><td class="mono">--m-sheet</td>  <td class="mono">320ms</td><td class="mono">cubic(.2,.8,.2,1)</td><td>bottom sheet enter/exit</td></tr>
+      <tr><td class="mono">--m-page</td>   <td class="mono">280ms</td><td class="mono">cubic(.4,0,.2,1)</td><td>nav push/pop</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout"><b>Reduced motion:</b> respect <code>prefers-reduced-motion</code> — fade only, no slide; sheet appears with opacity 0→1 over 200ms.</div>
+</section>
+
+<!-- ───────────────────── 10 A11y ───────────────────── -->
+<section id="a11y">
+  <div class="sec-eyebrow">10 · accessibility</div>
+  <h2 class="display">Accessibility</h2>
+  <ul class="tight">
+    <li><strong>Hit targets ≥ 44×44px.</strong> The 32px small button is reserved for inline secondary actions inside cards; never a primary CTA.</li>
+    <li><strong>Contrast.</strong> Body text (<code>--ink-2</code> on <code>--paper</code>) ≥ 4.5:1. <code>--muted</code> meets 3:1 for large/secondary text only — never use it for body copy or for state that must be readable.</li>
+    <li><strong>Color is never the only signal.</strong> Conflict pill always carries the word "overlaps". Joined state carries a checkmark, not just a color shift.</li>
+    <li><strong>Focus rings.</strong> 2px solid <code>--accent</code> with 2px offset, radius matching the element. Never remove default focus on web/PWA builds.</li>
+    <li><strong>Dynamic type.</strong> Inter sizes scale with system text-size setting; Caveat display does not (it's a brand glyph). Cap display growth at +20%.</li>
+    <li><strong>Voiceover labels.</strong> Avatar stacks announce as "Going: Maya, Jess, Greg, and 5 more." Time uses spoken format ("six thirty PM"), not raw "6:30p".</li>
+  </ul>
+</section>
+
+<!-- ───────────────────── 11 Assets ───────────────────── -->
+<section id="assets">
+  <div class="sec-eyebrow">11 · asset checklist</div>
+  <h2 class="display">Asset checklist</h2>
+  <table>
+    <thead><tr><th>Asset</th><th>Format</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>App icon</td><td class="mono">1024px PNG, masked iOS</td><td>Pending. Use Caveat "t." on paper background as v1 placeholder.</td></tr>
+      <tr><td>Inter</td><td class="mono">var.woff2 self-hosted</td><td>Subset to Latin + Latin-Ext.</td></tr>
+      <tr><td>Caveat</td><td class="mono">700 woff2</td><td>Latin only. Loaded with <code>font-display: swap</code>.</td></tr>
+      <tr><td>JetBrains Mono</td><td class="mono">500 + 600 woff2</td><td>Latin + numerals only.</td></tr>
+      <tr><td>Custom icons</td><td class="mono">SVG sprite</td><td>15 icons listed in §06. 24×24, 1.75px stroke.</td></tr>
+      <tr><td>Event photos</td><td class="mono">user-uploaded</td><td>Center-crop, 1:1 thumbnail, 16:9 hero. Blurhash placeholder while loading.</td></tr>
+      <tr><td>Avatar fallback</td><td class="mono">CSS gradient</td><td>No image. Initial char + tone background. Generated, not stored.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ───────────────────── 12 Tokens ───────────────────── -->
+<section id="tokens">
+  <div class="sec-eyebrow">12 · token export</div>
+  <h2 class="display">Tokens, ready to paste</h2>
+  <p class="sec-sub">Drop this into your global stylesheet as the first thing. Everything else in the app reads from these.</p>
+
+<pre><span class="c">/* ─────────── timeline.tokens.css ─────────── */</span>
+<span class="k">:root</span> {
+  <span class="c">/* surfaces */</span>
+  <span class="k">--paper</span>:        <span class="s">#FAF7F2</span>;
+  <span class="k">--card</span>:         <span class="s">#FFFFFF</span>;
+  <span class="k">--soft</span>:         <span class="s">#F3EFE7</span>;
+
+  <span class="c">/* ink */</span>
+  <span class="k">--ink</span>:          <span class="s">#1A1814</span>;
+  <span class="k">--ink-2</span>:        <span class="s">#2C2823</span>;
+  <span class="k">--muted</span>:        <span class="s">#8A8278</span>;
+
+  <span class="c">/* hairlines */</span>
+  <span class="k">--hair</span>:         <span class="s">rgba(26,24,20,0.10)</span>;
+  <span class="k">--hair-2</span>:       <span class="s">rgba(26,24,20,0.16)</span>;
+
+  <span class="c">/* accent (terracotta) */</span>
+  <span class="k">--accent</span>:       <span class="s">oklch(64% 0.14 38)</span>;
+  <span class="k">--accent-soft</span>:  <span class="s">oklch(94% 0.04 50)</span>;
+  <span class="k">--accent-ink</span>:   <span class="s">oklch(38% 0.10 38)</span>;
+
+  <span class="c">/* semantic */</span>
+  <span class="k">--good</span>:         <span class="s">oklch(58% 0.13 150)</span>;
+  <span class="k">--warn</span>:         <span class="s">oklch(72% 0.16 75)</span>;
+
+  <span class="c">/* spacing (4px base) */</span>
+  <span class="k">--s-1</span>: 4px;  <span class="k">--s-2</span>: 8px;  <span class="k">--s-3</span>: 12px;
+  <span class="k">--s-4</span>: 16px; <span class="k">--s-5</span>: 20px; <span class="k">--s-6</span>: 24px;
+  <span class="k">--s-8</span>: 32px; <span class="k">--s-10</span>: 40px;
+
+  <span class="c">/* radius */</span>
+  <span class="k">--r-sm</span>: 6px;  <span class="k">--r-md</span>: 10px; <span class="k">--r-lg</span>: 14px;
+  <span class="k">--r-xl</span>: 18px; <span class="k">--r-sheet</span>: 28px; <span class="k">--r-pill</span>: 999px;
+
+  <span class="c">/* elevation */</span>
+  <span class="k">--e-1</span>: 0 1px 0 rgba(20,16,12,.02), 0 8px 24px -16px rgba(20,16,12,.18);
+  <span class="k">--e-2</span>: 0 2px 0 rgba(20,16,12,.04), 0 14px 40px -18px rgba(20,16,12,.28);
+  <span class="k">--e-sheet</span>: 0 -20px 60px -20px rgba(20,16,12,.35);
+
+  <span class="c">/* motion */</span>
+  <span class="k">--m-fast</span>:  120ms ease-out;
+  <span class="k">--m-base</span>:  200ms cubic-bezier(.2,.7,.3,1);
+  <span class="k">--m-sheet</span>: 320ms cubic-bezier(.2,.8,.2,1);
+  <span class="k">--m-page</span>:  280ms cubic-bezier(.4,0,.2,1);
+
+  <span class="c">/* type */</span>
+  <span class="k">--font-ui</span>:      <span class="s">'Inter'</span>, ui-sans-serif, system-ui, sans-serif;
+  <span class="k">--font-display</span>: <span class="s">'Caveat'</span>, cursive;
+  <span class="k">--font-mono</span>:    <span class="s">'JetBrains Mono'</span>, ui-monospace, Menlo, monospace;
+}
+</pre>
+
+<h3>Sample component implementation</h3>
+<pre><span class="c">/* event-card.css — using only tokens */</span>
+.event-card {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-xl);
+  padding: var(--s-3) var(--s-4);
+  box-shadow: var(--e-1);
+  transition: transform var(--m-base), box-shadow var(--m-base);
+}
+.event-card:hover { box-shadow: var(--e-2); transform: translateY(-1px); }
+.event-card .time  { font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
+.event-card .title { font-size: 18px; font-weight: 600; line-height: 1.2; margin-top: var(--s-1); }
+.event-card .sub   { font-size: 13px; color: var(--muted); margin-top: 2px; }
+</pre>
+
+  <div class="callout"><b>Source of truth.</b> If a screen needs a value not in this token export, talk to design before adding it. New tokens go through review; one-offs do not.</div>
+</section>
+
+</div>
+</body>
+</html>
